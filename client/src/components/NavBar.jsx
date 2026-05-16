@@ -55,7 +55,9 @@ function Navbar() {
   // FETCH PROFILE
   // =========================
 
-  useEffect(() => {
+useEffect(() => {
+
+  const loadUser = () => {
 
     const storedUser = JSON.parse(
       localStorage.getItem("user")
@@ -73,7 +75,25 @@ function Navbar() {
 
     }
 
-  }, [location.pathname]);
+  };
+
+  loadUser();
+
+  window.addEventListener(
+    "profileUpdated",
+    loadUser
+  );
+
+  return () => {
+
+    window.removeEventListener(
+      "profileUpdated",
+      loadUser
+    );
+
+  };
+
+}, [location.pathname]);
 
   const fetchProfile = async (
     currentUser
@@ -322,9 +342,9 @@ function Navbar() {
                 >
 
                   {/* IMAGE */}
-                  {candidate?.profileImage ? (
+                  {candidate?.profileImage?.trim() ? (
                     <img
-                      src={`http://localhost:5002/uploads/${candidate.profileImage}?t=${Date.now()}`}
+                      src={`http://localhost:5002/uploads/${candidate.profileImage}`}
                       alt="profile"
                       className="w-12 h-12 rounded-full object-cover border-2 border-cyan-400 shadow-lg"
                     />
@@ -397,7 +417,7 @@ function Navbar() {
 
                           {candidate?.profileImage ? (
                             <img
-                              src={`http://localhost:5002/uploads/${candidate.profileImage}?t=${Date.now()}`}
+                              src={`http://localhost:5002/uploads/${candidate.profileImage}`}
                               alt="profile"
                               className="w-16 h-16 rounded-2xl object-cover border-2 border-cyan-400"
                             />
@@ -466,7 +486,7 @@ function Navbar() {
 
                         </Link>
 
-                        <Link
+                        {/* <Link
                           to="/change-password"
                           onClick={() =>
                             setProfileOpen(
@@ -480,7 +500,7 @@ function Navbar() {
 
                           Change Password
 
-                        </Link>
+                        </Link> */}
 
                         {/* RESUME */}
                         {candidate?.resume && (

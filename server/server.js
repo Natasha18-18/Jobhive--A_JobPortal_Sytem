@@ -10,6 +10,7 @@ import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import candidateRoutes from "./routes/candidateRoutes.js";
+import jobRoutes from "./routes/jobRoutes.js";
 
 dotenv.config();
 
@@ -74,6 +75,8 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 
 app.use("/api/candidate", candidateRoutes);
+
+app.use("/api/jobs", jobRoutes );
 
 // ======================
 // 404 HANDLER

@@ -1,7 +1,10 @@
 import express from "express";
+
 import multer from "multer";
 
 import Candidate from "../models/Candidate.js";
+
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -10,17 +13,36 @@ const router = express.Router();
 // ======================
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+
+  destination: function (
+    req,
+    file,
+    cb
+  ) {
+
     cb(null, "uploads/");
+
   },
 
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
+  filename: function (
+    req,
+    file,
+    cb
+  ) {
+
+    cb(
+      null,
+      Date.now() +
+        "-" +
+        file.originalname
+    );
+
   },
+
 });
 
 const upload = multer({
-  storage: storage,
+  storage,
 });
 
 // ======================
@@ -47,8 +69,13 @@ router.post(
 
       const existingCandidate =
         await Candidate.findOne({
-          userId: req.body.userId,
+          userId:
+            req.body.userId,
         });
+
+      // ======================
+      // UPDATE PROFILE
+      // ======================
 
       if (existingCandidate) {
 
@@ -77,66 +104,115 @@ router.post(
           req.body.github;
 
         existingCandidate.skills =
-          JSON.parse(req.body.skills || "[]");
+          JSON.parse(
+            req.body.skills ||
+              "[]"
+          );
 
-        if (req.files?.resume) {
+        // KEEP OLD RESUME
+        if (
+          req.files?.resume
+        ) {
+
           existingCandidate.resume =
-            req.files.resume[0].filename;
+            req.files.resume[0]
+              .filename;
+
         }
 
-        if (req.files?.profileImage) {
+        // KEEP OLD IMAGE
+        if (
+          req.files
+            ?.profileImage
+        ) {
+
           existingCandidate.profileImage =
-            req.files.profileImage[0].filename;
+            req.files
+              .profileImage[0]
+              .filename;
+
         }
 
         await existingCandidate.save();
 
+        await User.findByIdAndUpdate(
+  req.body.userId,
+  {
+    fullName: req.body.fullName,
+    email: req.body.email,
+    phone: req.body.phone,
+  }
+);
+
         return res.status(200).json({
           success: true,
-          message: "Profile Updated",
+          message:
+            "Profile Updated",
           data: existingCandidate,
         });
+
       }
 
+      // ======================
       // CREATE NEW PROFILE
+      // ======================
 
-      const candidate = new Candidate({
-        userId: req.body.userId,
+      const candidate =
+        new Candidate({
+          userId:
+            req.body.userId,
 
-        fullName: req.body.fullName,
+          fullName:
+            req.body.fullName,
 
-        email: req.body.email,
+          email:
+            req.body.email,
 
-        phone: req.body.phone,
+          phone:
+            req.body.phone,
 
-        role: req.body.role,
+          role:
+            req.body.role,
 
-        bio: req.body.bio,
+          bio:
+            req.body.bio,
 
-        portfolio: req.body.portfolio,
+          portfolio:
+            req.body.portfolio,
 
-        linkedin: req.body.linkedin,
+          linkedin:
+            req.body.linkedin,
 
-        github: req.body.github,
+          github:
+            req.body.github,
 
-        skills: JSON.parse(
-          req.body.skills || "[]"
-        ),
+          skills: JSON.parse(
+            req.body.skills ||
+              "[]"
+          ),
 
-        resume: req.files?.resume
-          ? req.files.resume[0].filename
-          : "",
+          resume:
+            req.files?.resume
+              ? req.files
+                  .resume[0]
+                  .filename
+              : "",
 
-        profileImage: req.files?.profileImage
-          ? req.files.profileImage[0].filename
-          : "",
-      });
+          profileImage:
+            req.files
+              ?.profileImage
+              ? req.files
+                  .profileImage[0]
+                  .filename
+              : "",
+        });
 
       await candidate.save();
 
       res.status(200).json({
         success: true,
-        message: "Profile Saved",
+        message:
+          "Profile Saved",
         data: candidate,
       });
 
@@ -146,71 +222,88 @@ router.post(
 
       res.status(500).json({
         success: false,
-        message: error.message,
+        message:
+          error.message,
       });
+
     }
+
   }
 );
 
 // ======================
-// GET ALL CANDIDATES
+// GET ALL
 // ======================
 
-router.get("/all", async (req, res) => {
-  try {
+router.get(
+  "/all",
+  async (req, res) => {
 
-    const candidates = await Candidate.find();
+    try {
 
-    res.status(200).json({
-      success: true,
-      data: candidates,
-    });
+      const candidates =
+        await Candidate.find();
 
-  } catch (error) {
+      res.status(200).json({
+        success: true,
+        data: candidates,
+      });
 
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    } catch (error) {
 
-  }
-});
-
-// ======================
-// GET SINGLE PROFILE
-// ======================
-
-router.get("/:userId", async (req, res) => {
-  try {
-
-    const candidate = await Candidate.findOne({
-      userId: req.params.userId,
-    });
-
-    if (!candidate) {
-
-      return res.status(404).json({
+      res.status(500).json({
         success: false,
-        message: "Profile not found",
+        message:
+          error.message,
       });
 
     }
 
-    res.status(200).json({
-      success: true,
-      data: candidate,
-    });
+  }
+);
 
-  } catch (error) {
+// ======================
+// GET SINGLE
+// ======================
 
-    console.log(error);
+router.get(
+  "/:userId",
+  async (req, res) => {
 
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    try {
+
+      const candidate =
+        await Candidate.findOne({
+          userId:
+            req.params.userId,
+        });
+
+      if (!candidate) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "Profile not found",
+        });
+
+      }
+
+      res.status(200).json({
+        success: true,
+        data: candidate,
+      });
+
+    } catch (error) {
+
+      res.status(500).json({
+        success: false,
+        message:
+          error.message,
+      });
+
+    }
 
   }
-});
+);
 
 export default router;

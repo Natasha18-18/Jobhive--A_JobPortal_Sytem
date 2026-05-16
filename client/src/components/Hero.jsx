@@ -279,11 +279,11 @@ function Hero() {
 
               <div>
 
-                <h3 className="text-2xl font-bold">
+                <h3 className="text-2xl font-bold text-black">
                   5K+
                 </h3>
 
-                <p className="text-sm text-gray-300">
+                <p className="text-sm text-black">
                   Hiring Companies
                 </p>
 

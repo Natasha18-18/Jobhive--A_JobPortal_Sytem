@@ -1,8 +1,31 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5002/api",
+  baseURL:
+    "http://localhost:5002/api",
+
   withCredentials: true,
 });
+
+// TOKEN AUTO SEND
+API.interceptors.request.use(
+  (config) => {
+
+    const token =
+      localStorage.getItem(
+        "token"
+      );
+
+    if (token) {
+
+      config.headers.Authorization =
+        `Bearer ${token}`;
+
+    }
+
+    return config;
+
+  }
+);
 
 export default API;

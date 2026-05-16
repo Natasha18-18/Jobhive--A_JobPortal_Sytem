@@ -1,6 +1,10 @@
-import { Link } from "react-router-dom";
+import {
+  Link,
+} from "react-router-dom";
 
-import { motion } from "framer-motion";
+import {
+  motion,
+} from "framer-motion";
 
 import {
   FaSearch,
@@ -11,40 +15,55 @@ import {
   FaClock,
 } from "react-icons/fa";
 
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import axios from "axios";
+
 function Jobs() {
 
-  const jobs = [
-    {
-      id: 1,
-      title: "Frontend Developer",
-      company: "Google",
-      location: "Bangalore",
-      salary: "₹12L - ₹18L",
-      type: "Full Time",
-      image:
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-    },
-    {
-      id: 2,
-      title: "UI/UX Designer",
-      company: "Adobe",
-      location: "Remote",
-      salary: "₹8L - ₹14L",
-      type: "Remote",
-      image:
-        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d",
-    },
-    {
-      id: 3,
-      title: "Backend Engineer",
-      company: "Microsoft",
-      location: "Hyderabad",
-      salary: "₹15L - ₹22L",
-      type: "Hybrid",
-      image:
-        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3",
-    },
-  ];
+  const [jobs, setJobs] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  // =========================
+  // FETCH JOBS
+  // =========================
+
+  useEffect(() => {
+
+    fetchJobs();
+
+  }, []);
+
+  const fetchJobs = async () => {
+
+    try {
+
+      const res = await axios.get(
+        "http://localhost:5002/api/jobs/all"
+      );
+
+      if (res.data.success) {
+
+        setJobs(res.data.jobs);
+
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  };
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#050816] via-[#0b1120] to-[#111827] pt-32 pb-20 px-6">
@@ -118,112 +137,136 @@ function Jobs() {
 
         </div>
 
-        {/* JOBS */}
-        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 mt-16">
+        {/* LOADING */}
+        {loading ? (
 
-          {jobs.map((job, index) => (
-            <motion.div
-              key={job.id}
-              initial={{
-                opacity: 0,
-                y: 40,
-              }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                delay: index * 0.1,
-              }}
-              whileHover={{
-                y: -10,
-              }}
-              className="bg-white/5 border border-white/10 rounded-[30px] overflow-hidden backdrop-blur-2xl hover:border-cyan-400/30 transition-all duration-300"
-            >
+          <div className="text-center text-white mt-20 text-2xl">
 
-              <img
-                src={job.image}
-                alt={job.title}
-                className="w-full h-52 object-cover"
-              />
+            Loading Jobs...
 
-              <div className="p-7">
+          </div>
 
-                <div className="flex items-center justify-between">
+        ) : jobs.length === 0 ? (
 
-                  <span className="px-4 py-2 rounded-full bg-cyan-500/10 text-cyan-300 text-sm">
+          <div className="text-center text-gray-400 mt-20 text-2xl">
 
-                    {job.type}
+            No Jobs Found
 
-                  </span>
+          </div>
 
-                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+        ) : (
 
-                    <FaClock />
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 mt-16">
 
-                    2 Days Ago
+            {jobs.map((job, index) => (
+
+              <motion.div
+                key={job._id}
+                initial={{
+                  opacity: 0,
+                  y: 40,
+                }}
+                whileInView={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                transition={{
+                  delay: index * 0.1,
+                }}
+                whileHover={{
+                  y: -10,
+                }}
+                className="bg-white/5 border border-white/10 rounded-[30px] overflow-hidden backdrop-blur-2xl hover:border-cyan-400/30 transition-all duration-300"
+              >
+
+                <img
+                  src={
+                    job.image
+                      ? `http://localhost:5002/uploads/${job.image}`
+                      : "https://images.unsplash.com/photo-1498050108023-c5249f4df085"
+                  }
+                  alt={job.title}
+                  className="w-full h-52 object-cover"
+                />
+
+                <div className="p-7">
+
+                  <div className="flex items-center justify-between">
+
+                    <span className="px-4 py-2 rounded-full bg-cyan-500/10 text-cyan-300 text-sm">
+
+                      {job.type}
+
+                    </span>
+
+                    <div className="flex items-center gap-2 text-gray-400 text-sm">
+
+                      <FaClock />
+
+                      New
+
+                    </div>
 
                   </div>
+
+                  <h2 className="mt-5 text-3xl font-bold text-white">
+
+                    {job.title}
+
+                  </h2>
+
+                  <p className="mt-2 text-cyan-300 font-medium">
+
+                    {job.company}
+
+                  </p>
+
+                  <div className="mt-6 space-y-4 text-gray-300">
+
+                    <div className="flex items-center gap-3">
+
+                      <FaMapMarkerAlt className="text-cyan-400" />
+
+                      {job.location}
+
+                    </div>
+
+                    <div className="flex items-center gap-3">
+
+                      <FaMoneyBillWave className="text-cyan-400" />
+
+                      {job.salary}
+
+                    </div>
+
+                    <div className="flex items-center gap-3">
+
+                      <FaBriefcase className="text-cyan-400" />
+
+                      {job.experience}
+
+                    </div>
+
+                  </div>
+
+                  <Link
+                    to={`/jobs/${job._id}`}
+                    className="mt-8 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 py-4 rounded-2xl text-white font-semibold shadow-xl hover:shadow-cyan-500/30 transition-all duration-300"
+                  >
+
+                    View Details
+
+                    <FaArrowRight />
+
+                  </Link>
 
                 </div>
 
-                <h2 className="mt-5 text-3xl font-bold text-white">
+              </motion.div>
+            ))}
 
-                  {job.title}
-
-                </h2>
-
-                <p className="mt-2 text-cyan-300 font-medium">
-
-                  {job.company}
-
-                </p>
-
-                <div className="mt-6 space-y-4 text-gray-300">
-
-                  <div className="flex items-center gap-3">
-
-                    <FaMapMarkerAlt className="text-cyan-400" />
-
-                    {job.location}
-
-                  </div>
-
-                  <div className="flex items-center gap-3">
-
-                    <FaMoneyBillWave className="text-cyan-400" />
-
-                    {job.salary}
-
-                  </div>
-
-                  <div className="flex items-center gap-3">
-
-                    <FaBriefcase className="text-cyan-400" />
-
-                    2+ Years Experience
-
-                  </div>
-
-                </div>
-
-                <Link
-                  to={`/jobs/${job.id}`}
-                  className="mt-8 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 py-4 rounded-2xl text-white font-semibold shadow-xl hover:shadow-cyan-500/30 transition-all duration-300"
-                >
-
-                  View Details
-
-                  <FaArrowRight />
-
-                </Link>
-
-              </div>
-
-            </motion.div>
-          ))}
-
-        </div>
+          </div>
+        )}
 
       </div>
 

@@ -1,359 +1,279 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import axios from "axios";
 
 import { motion } from "framer-motion";
 
+import toast from "react-hot-toast";
+
 import {
-  FaUser,
-  FaEnvelope,
-  FaPhoneAlt,
-  FaMapMarkerAlt,
-  FaGlobe,
-  FaLinkedin,
-  FaGithub,
-  FaBell,
-  FaShieldAlt,
-  FaSave,
+  FaLock,
 } from "react-icons/fa";
 
-function Settings() {
+function ProfileSetting() {
 
-  const [candidate, setCandidate] = useState(null);
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
 
-  // ======================
-  // FETCH PROFILE
-  // ======================
+  const [
+    passwordLoading,
+    setPasswordLoading,
+  ] = useState(false);
 
-  useEffect(() => {
+  const [
+    passwordData,
+    setPasswordData,
+  ] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
-    fetchProfile();
+  // =========================
+  // HANDLE CHANGE
+  // =========================
 
-  }, []);
+  const handlePasswordChange = (
+    e
+  ) => {
 
-  const fetchProfile = async () => {
-    try {
+    setPasswordData({
+      ...passwordData,
+      [e.target.name]:
+        e.target.value,
+    });
 
-      const res = await axios.get(
-        "http://localhost:5002/api/candidate/all"
-      );
-
-      console.log("ALL DATA => ", res.data.data);
-
-      if (res.data.success) {
-
-        const latestProfile =
-          res.data.data.at(-1);
-
-        console.log("LATEST PROFILE => ", latestProfile);
-
-        setCandidate(latestProfile);
-      }
-
-    } catch (error) {
-
-      console.log(error);
-
-    }
   };
 
+  // =========================
+  // CHANGE PASSWORD
+  // =========================
+
+  const handleUpdatePassword =
+    async (e) => {
+
+      e.preventDefault();
+
+      if (
+        passwordData.newPassword !==
+        passwordData.confirmPassword
+      ) {
+
+        return toast.error(
+          "Passwords do not match"
+        );
+
+      }
+
+      try {
+
+        setPasswordLoading(true);
+
+        const res = await axios.put(
+          "http://localhost:5002/api/auth/change-password",
+          {
+            userId: user._id,
+            oldPassword:
+              passwordData.oldPassword,
+            newPassword:
+              passwordData.newPassword,
+          }
+        );
+
+        if (res.data.success) {
+
+          toast.success(
+            "Password Updated Successfully"
+          );
+
+          setPasswordData({
+            oldPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+          });
+
+        }
+
+      } catch (error) {
+
+        toast.error(
+          error.response?.data
+            ?.message ||
+            "Password Update Failed"
+        );
+
+      } finally {
+
+        setPasswordLoading(false);
+
+      }
+
+    };
+
   return (
-    <section className="min-h-screen bg-gradient-to-br from-[#050816] via-[#0b1120] to-[#111827] pt-32 pb-20 px-6 overflow-hidden relative">
 
-      {/* BG EFFECTS */}
-      <div className="absolute top-0 left-0 w-[350px] h-[350px] bg-blue-600/20 blur-3xl rounded-full"></div>
+    <section className="min-h-screen bg-gradient-to-br from-[#050816] via-[#0b1120] to-[#111827] pt-32 pb-20 px-6">
 
-      <div className="absolute bottom-0 right-0 w-[350px] h-[350px] bg-cyan-500/10 blur-3xl rounded-full"></div>
+      <div className="max-w-2xl mx-auto">
 
-      <div className="max-w-6xl mx-auto relative z-10">
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 40,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[35px] p-8 md:p-12 shadow-2xl"
+        >
 
-        {/* PAGE TITLE */}
-        <div className="mb-10">
+          {/* TITLE */}
+          <div className="mb-10 text-center">
 
-          <h1 className="text-5xl font-black text-white">
-            Profile Settings
-          </h1>
+            <h1 className="text-4xl font-black text-white">
 
-          <p className="text-gray-400 mt-3 text-lg">
-            Manage your account information and preferences
-          </p>
+              Change Password
 
-        </div>
+            </h1>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+            <p className="text-gray-400 mt-2">
 
-          {/* LEFT MENU */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white/5 border border-white/10 rounded-[30px] p-6 h-fit backdrop-blur-2xl"
+              Secure your account with a new password
+
+            </p>
+
+          </div>
+
+          {/* PASSWORD FORM */}
+          <form
+            onSubmit={
+              handleUpdatePassword
+            }
+            className="space-y-6"
           >
 
-            {/* PROFILE IMAGE */}
-            <div className="flex flex-col items-center mb-8">
-
-              <img
-                src={
-                  candidate?.profileImage
-                    ? `http://localhost:5002/uploads/${candidate.profileImage}?t=${Date.now()}`
-                    : "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                }
-                alt="profile"
-                key={candidate?.profileImage}
-                onError={(e) => {
-                  e.target.src =
-                    "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-                }}
-                className="w-32 h-32 rounded-full object-cover border-4 border-cyan-500 shadow-2xl"
-              />
-
-              <h2 className="text-white text-2xl font-bold mt-5">
-
-                {candidate?.fullName || "User"}
-
-              </h2>
-
-              <p className="text-cyan-400 mt-2">
-
-                {candidate?.role || "Developer"}
-
-              </p>
-
-            </div>
-
-            {/* MENU */}
-            <div className="space-y-4">
-
-              {[
-                "Account Information",
-                "Social Profiles",
-                "Notifications",
-                "Security",
-              ].map((item, index) => (
-                <button
-                  key={index}
-                  className={`w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 ${
-                    index === 0
-                      ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
-                      : "bg-white/5 text-gray-300 hover:bg-white/10"
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
-
-            </div>
-
-          </motion.div>
-
-          {/* RIGHT CONTENT */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[40px] p-8 md:p-10 backdrop-blur-2xl shadow-2xl"
-          >
-
-            {/* ACCOUNT INFO */}
+            {/* OLD PASSWORD */}
             <div>
 
-              <h2 className="text-3xl font-bold text-white mb-8">
-                Account Information
-              </h2>
+              <label className="text-gray-300 text-sm block mb-3">
 
-              <div className="grid md:grid-cols-2 gap-6">
+                Current Password
 
-                {/* FULL NAME */}
-                <div>
+              </label>
 
-                  <label className="text-gray-300 text-sm mb-3 block">
-                    Full Name
-                  </label>
+              <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
 
-                  <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
+                <FaLock className="text-cyan-400" />
 
-                    <FaUser className="text-cyan-400" />
-
-                    <input
-                      type="text"
-                      value={candidate?.fullName || ""}
-                      readOnly
-                      className="bg-transparent outline-none w-full text-white"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* EMAIL */}
-                <div>
-
-                  <label className="text-gray-300 text-sm mb-3 block">
-                    Email Address
-                  </label>
-
-                  <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-
-                    <FaEnvelope className="text-cyan-400" />
-
-                    <input
-                      type="email"
-                      value={candidate?.email || ""}
-                      readOnly
-                      className="bg-transparent outline-none w-full text-white"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* PHONE */}
-                <div>
-
-                  <label className="text-gray-300 text-sm mb-3 block">
-                    Phone Number
-                  </label>
-
-                  <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-
-                    <FaPhoneAlt className="text-cyan-400" />
-
-                    <input
-                      type="text"
-                      value={candidate?.phone || ""}
-                      readOnly
-                      className="bg-transparent outline-none w-full text-white"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* ROLE */}
-                <div>
-
-                  <label className="text-gray-300 text-sm mb-3 block">
-                    Role
-                  </label>
-
-                  <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-
-                    <FaMapMarkerAlt className="text-cyan-400" />
-
-                    <input
-                      type="text"
-                      value={candidate?.role || ""}
-                      readOnly
-                      className="bg-transparent outline-none w-full text-white"
-                    />
-
-                  </div>
-
-                </div>
+                <input
+                  type="password"
+                  name="oldPassword"
+                  value={
+                    passwordData.oldPassword
+                  }
+                  onChange={
+                    handlePasswordChange
+                  }
+                  placeholder="Enter current password"
+                  className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                />
 
               </div>
 
             </div>
 
-            {/* SOCIAL LINKS */}
-            <div className="mt-14">
+            {/* NEW PASSWORD */}
+            <div>
 
-              <h2 className="text-3xl font-bold text-white mb-8">
-                Social Profiles
-              </h2>
+              <label className="text-gray-300 text-sm block mb-3">
 
-              <div className="space-y-6">
+                New Password
 
-                {/* LINKEDIN */}
-                <div>
+              </label>
 
-                  <label className="text-gray-300 text-sm mb-3 block">
-                    LinkedIn Profile
-                  </label>
+              <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
 
-                  <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
+                <FaLock className="text-cyan-400" />
 
-                    <FaLinkedin className="text-cyan-400" />
-
-                    <input
-                      type="text"
-                      value={candidate?.linkedin || ""}
-                      readOnly
-                      className="bg-transparent outline-none w-full text-white"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* GITHUB */}
-                <div>
-
-                  <label className="text-gray-300 text-sm mb-3 block">
-                    GitHub Profile
-                  </label>
-
-                  <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-
-                    <FaGithub className="text-cyan-400" />
-
-                    <input
-                      type="text"
-                      value={candidate?.github || ""}
-                      readOnly
-                      className="bg-transparent outline-none w-full text-white"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* WEBSITE */}
-                <div>
-
-                  <label className="text-gray-300 text-sm mb-3 block">
-                    Portfolio Website
-                  </label>
-
-                  <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-
-                    <FaGlobe className="text-cyan-400" />
-
-                    <input
-                      type="text"
-                      value={candidate?.portfolio || ""}
-                      readOnly
-                      className="bg-transparent outline-none w-full text-white"
-                    />
-
-                  </div>
-
-                </div>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={
+                    passwordData.newPassword
+                  }
+                  onChange={
+                    handlePasswordChange
+                  }
+                  placeholder="Enter new password"
+                  className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                />
 
               </div>
 
             </div>
 
-            {/* SAVE BUTTON */}
+            {/* CONFIRM PASSWORD */}
+            <div>
+
+              <label className="text-gray-300 text-sm block mb-3">
+
+                Confirm Password
+
+              </label>
+
+              <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
+
+                <FaLock className="text-cyan-400" />
+
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={
+                    passwordData.confirmPassword
+                  }
+                  onChange={
+                    handlePasswordChange
+                  }
+                  placeholder="Confirm new password"
+                  className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                />
+
+              </div>
+
+            </div>
+
+            {/* BUTTON */}
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="mt-14 w-full bg-gradient-to-r from-blue-600 to-cyan-500 py-5 rounded-2xl text-white font-semibold shadow-2xl flex items-center justify-center gap-3"
+              whileHover={{
+                scale: 1.01,
+              }}
+              whileTap={{
+                scale: 0.98,
+              }}
+              type="submit"
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-500 py-4 rounded-2xl font-semibold text-white flex items-center justify-center gap-3 shadow-2xl"
             >
 
-              <FaSave />
+              <FaLock />
 
-              Save Changes
+              {passwordLoading
+                ? "Updating..."
+                : "Update Password"}
 
             </motion.button>
 
-          </motion.div>
+          </form>
 
-        </div>
+        </motion.div>
 
       </div>
 
     </section>
+
   );
+
 }
 
-export default Settings;
+export default ProfileSetting;

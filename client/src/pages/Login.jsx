@@ -232,15 +232,15 @@ if (response.data.success) {
     JSON.stringify(response.data.user)
   );
 
-  // OPTIONAL LOGIN FLAG
+  // LOGIN FLAG
   localStorage.setItem(
     "isLoggedIn",
     "true"
   );
 
-  // FORCE REFRESH NAVBAR DATA
+  // UPDATE NAVBAR
   window.dispatchEvent(
-    new Event("storage")
+    new Event("profileUpdated")
   );
 
   // REDIRECT

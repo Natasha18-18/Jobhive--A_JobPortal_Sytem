@@ -472,3 +472,79 @@ export const resetPassword = async (req, res) => {
 
   }
 };
+
+///////////////////////////////////////////////////////////
+// CHANGE PASSWORD
+///////////////////////////////////////////////////////////
+
+export const changePassword = async (
+  req,
+  res
+) => {
+
+  try {
+
+    const {
+      userId,
+      oldPassword,
+      newPassword,
+    } = req.body;
+
+    // FIND USER
+    const user =
+      await User.findById(userId);
+
+    if (!user) {
+
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+
+    }
+
+    // CHECK OLD PASSWORD
+    const isMatch =
+      await bcrypt.compare(
+        oldPassword,
+        user.password
+      );
+
+    if (!isMatch) {
+
+      return res.status(400).json({
+        success: false,
+        message:
+          "Current password incorrect",
+      });
+
+    }
+
+    // HASH NEW PASSWORD
+    const hashedPassword =
+      await bcrypt.hash(
+        newPassword,
+        10
+      );
+
+    user.password =
+      hashedPassword;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Password updated successfully",
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+
+};

@@ -194,6 +194,8 @@ function EditProfile() {
           profileImage
         );
       }
+      
+      console.log([...data.entries()]);
 
       const res = await axios.post(
         "http://localhost:5002/api/candidate/create",
@@ -208,14 +210,32 @@ function EditProfile() {
         }
       );
 
-      if (res.data.success) {
+if (res.data.success) {
 
-        alert(
-          "Profile Saved Successfully 🚀"
-        );
+  // UPDATE LOCAL STORAGE
+  const updatedUser = {
+    ...user,
+    fullName: res.data.data.fullName,
+    email: res.data.data.email,
+    profileImage: res.data.data.profileImage,
+  };
 
-        navigate("/settings");
-      }
+  localStorage.setItem(
+    "user",
+    JSON.stringify(updatedUser)
+  );
+
+  // CUSTOM EVENT TRIGGER
+  window.dispatchEvent(
+    new Event("profileUpdated")
+  );
+
+  alert(
+    "Profile Saved Successfully 🚀"
+  );
+
+  navigate("/");
+}
 
     } catch (error) {
 
@@ -285,14 +305,18 @@ function EditProfile() {
                 <div className="relative">
 
                   {profileImage ? (
-                    <img
-                      src={URL.createObjectURL(
-                        profileImage
-                      )}
-                      alt="profile"
-                      className="w-36 h-36 rounded-full object-cover border-4 border-cyan-500"
-                    />
-                  ) : (
+  <img
+    src={URL.createObjectURL(profileImage)}
+    alt="profile"
+    className="w-36 h-36 rounded-full object-cover border-4 border-cyan-500"
+  />
+) : formData.profileImage ? (
+  <img
+    src={`http://localhost:5002/uploads/${formData.profileImage}`}
+    alt="profile"
+    className="w-36 h-36 rounded-full object-cover border-4 border-cyan-500"
+  />
+) : (
                     <div className="w-36 h-36 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-7xl shadow-2xl">
                       <FaUserCircle />
                     </div>
