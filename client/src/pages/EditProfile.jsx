@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import { motion } from "framer-motion";
 
@@ -19,24 +21,213 @@ import {
 
 function EditProfile() {
 
-  const [skills, setSkills] = useState([
-    "React",
-    "Node.js",
-    "Tailwind CSS",
-  ]);
+  const navigate = useNavigate();
 
-  const [skillInput, setSkillInput] = useState("");
+  // =========================
+  // USER
+  // =========================
+
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
+
+  // =========================
+  // FORM STATES
+  // =========================
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    role: "",
+    bio: "",
+    portfolio: "",
+    linkedin: "",
+    github: "",
+  });
+
+  const [profileImage, setProfileImage] =
+    useState(null);
+
+  const [resume, setResume] = useState(null);
+
+  const [loading, setLoading] = useState(false);
+
+  // =========================
+  // SKILLS
+  // =========================
+
+  const [skills, setSkills] = useState([]);
+
+  const [skillInput, setSkillInput] =
+    useState("");
+
+  // =========================
+  // FETCH EXISTING PROFILE
+  // =========================
+
+  useEffect(() => {
+
+    fetchProfile();
+
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+
+      const res = await axios.get(
+        `http://localhost:5002/api/candidate/${user._id}`
+      );
+
+      if (res.data.success) {
+
+        const profile = res.data.data;
+
+        setFormData({
+          fullName: profile.fullName || "",
+          email: profile.email || "",
+          phone: profile.phone || "",
+          role: profile.role || "",
+          bio: profile.bio || "",
+          portfolio: profile.portfolio || "",
+          linkedin: profile.linkedin || "",
+          github: profile.github || "",
+        });
+
+        setSkills(profile.skills || []);
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
+
+  // =========================
+  // ADD SKILL
+  // =========================
 
   const addSkill = () => {
+
     if (skillInput.trim() !== "") {
-      setSkills([...skills, skillInput]);
+
+      setSkills([
+        ...skills,
+        skillInput,
+      ]);
+
       setSkillInput("");
     }
   };
 
+  // =========================
+  // REMOVE SKILL
+  // =========================
+
   const removeSkill = (index) => {
-    const updated = skills.filter((_, i) => i !== index);
+
+    const updated = skills.filter(
+      (_, i) => i !== index
+    );
+
     setSkills(updated);
+  };
+
+  // =========================
+  // HANDLE INPUT
+  // =========================
+
+  const handleChange = (e) => {
+
+    setFormData({
+      ...formData,
+
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // =========================
+  // SUBMIT
+  // =========================
+
+  const handleSubmit = async () => {
+    try {
+
+      setLoading(true);
+
+      const data = new FormData();
+
+      // USER ID
+      data.append("userId", user._id);
+
+      // TEXT DATA
+      Object.keys(formData).forEach((key) => {
+
+        data.append(
+          key,
+          formData[key]
+        );
+
+      });
+
+      // SKILLS
+      data.append(
+        "skills",
+        JSON.stringify(skills)
+      );
+
+      // RESUME
+      if (resume) {
+
+        data.append(
+          "resume",
+          resume
+        );
+      }
+
+      // PROFILE IMAGE
+      if (profileImage) {
+
+        data.append(
+          "profileImage",
+          profileImage
+        );
+      }
+
+      const res = await axios.post(
+        "http://localhost:5002/api/candidate/create",
+        data,
+        {
+          headers: {
+            "Content-Type":
+              "multipart/form-data",
+          },
+
+          withCredentials: true,
+        }
+      );
+
+      if (res.data.success) {
+
+        alert(
+          "Profile Saved Successfully 🚀"
+        );
+
+        navigate("/settings");
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Something went wrong");
+
+    } finally {
+
+      setLoading(false);
+
+    }
   };
 
   return (
@@ -64,22 +255,18 @@ function EditProfile() {
           >
 
             <h1 className="text-5xl font-black text-white">
-
               Edit Your Profile
-
             </h1>
 
             <p className="mt-4 text-gray-400 text-lg">
-
               Update your profile and stand out to recruiters
-
             </p>
 
           </motion.div>
 
           <div className="grid lg:grid-cols-3 gap-8">
 
-            {/* LEFT SIDEBAR */}
+            {/* LEFT */}
             <motion.div
               initial={{
                 opacity: 0,
@@ -97,11 +284,19 @@ function EditProfile() {
 
                 <div className="relative">
 
-                  <div className="w-36 h-36 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-7xl shadow-2xl">
-
-                    <FaUserCircle />
-
-                  </div>
+                  {profileImage ? (
+                    <img
+                      src={URL.createObjectURL(
+                        profileImage
+                      )}
+                      alt="profile"
+                      className="w-36 h-36 rounded-full object-cover border-4 border-cyan-500"
+                    />
+                  ) : (
+                    <div className="w-36 h-36 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-7xl shadow-2xl">
+                      <FaUserCircle />
+                    </div>
+                  )}
 
                   <label className="absolute bottom-2 right-2 w-12 h-12 rounded-full bg-cyan-500 flex items-center justify-center text-white cursor-pointer shadow-xl">
 
@@ -110,6 +305,11 @@ function EditProfile() {
                     <input
                       type="file"
                       className="hidden"
+                      onChange={(e) =>
+                        setProfileImage(
+                          e.target.files[0]
+                        )
+                      }
                     />
 
                   </label>
@@ -117,11 +317,17 @@ function EditProfile() {
                 </div>
 
                 <h2 className="mt-6 text-2xl font-bold text-white">
-                  Harsh Sharma
+
+                  {formData.fullName ||
+                    "Your Name"}
+
                 </h2>
 
                 <p className="text-cyan-400 mt-1">
-                  Frontend Developer
+
+                  {formData.role ||
+                    "Frontend Developer"}
+
                 </p>
 
               </div>
@@ -130,20 +336,25 @@ function EditProfile() {
               <div className="mt-10">
 
                 <h3 className="text-white font-semibold text-lg mb-4">
-
                   Resume
-
                 </h3>
 
-                <label className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 py-4 rounded-2xl text-white font-semibold cursor-pointer shadow-xl hover:shadow-cyan-500/30 transition-all duration-300">
+                <label className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 py-4 rounded-2xl text-white font-semibold cursor-pointer shadow-xl">
 
                   <FaFileUpload />
 
-                  Upload Resume
+                  {resume
+                    ? resume.name
+                    : "Upload Resume"}
 
                   <input
                     type="file"
                     className="hidden"
+                    onChange={(e) =>
+                      setResume(
+                        e.target.files[0]
+                      )
+                    }
                   />
 
                 </label>
@@ -165,7 +376,7 @@ function EditProfile() {
 
                   <FaBriefcase className="text-cyan-400" />
 
-                  2 Years Experience
+                  Experience
 
                 </div>
 
@@ -173,7 +384,7 @@ function EditProfile() {
 
                   <FaGraduationCap className="text-cyan-400" />
 
-                  B.Tech CSE
+                  Education
 
                 </div>
 
@@ -181,7 +392,7 @@ function EditProfile() {
 
             </motion.div>
 
-            {/* RIGHT CONTENT */}
+            {/* RIGHT */}
             <motion.div
               initial={{
                 opacity: 0,
@@ -198,36 +409,31 @@ function EditProfile() {
               <div>
 
                 <h2 className="text-3xl font-bold text-white mb-8">
-
                   Basic Information
-
                 </h2>
 
                 <div className="grid md:grid-cols-2 gap-6">
 
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400"
-                  />
-
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Phone Number"
-                    className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Job Role"
-                    className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400"
-                  />
+                  {[
+                    "fullName",
+                    "email",
+                    "phone",
+                    "role",
+                  ].map((field, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      name={field}
+                      placeholder={field}
+                      value={
+                        formData[field]
+                      }
+                      onChange={
+                        handleChange
+                      }
+                      className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400"
+                    />
+                  ))}
 
                 </div>
 
@@ -237,13 +443,14 @@ function EditProfile() {
               <div className="mt-12">
 
                 <h2 className="text-3xl font-bold text-white mb-6">
-
                   Bio
-
                 </h2>
 
                 <textarea
                   rows="6"
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleChange}
                   placeholder="Write something about yourself..."
                   className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400 resize-none"
                 ></textarea>
@@ -254,48 +461,61 @@ function EditProfile() {
               <div className="mt-12">
 
                 <h2 className="text-3xl font-bold text-white mb-6">
-
                   Social Links
-
                 </h2>
 
                 <div className="space-y-5">
 
-                  <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
+                  {[
+                    {
+                      icon: <FaGlobe />,
+                      name: "portfolio",
+                      placeholder:
+                        "Portfolio Website",
+                    },
 
-                    <FaGlobe className="text-cyan-400" />
+                    {
+                      icon: <FaLinkedin />,
+                      name: "linkedin",
+                      placeholder:
+                        "LinkedIn Profile",
+                    },
 
-                    <input
-                      type="text"
-                      placeholder="Portfolio Website"
-                      className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
-                    />
+                    {
+                      icon: <FaGithub />,
+                      name: "github",
+                      placeholder:
+                        "GitHub Profile",
+                    },
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4"
+                    >
 
-                  </div>
+                      <span className="text-cyan-400">
+                        {item.icon}
+                      </span>
 
-                  <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
+                      <input
+                        type="text"
+                        name={item.name}
+                        value={
+                          formData[
+                            item.name
+                          ]
+                        }
+                        onChange={
+                          handleChange
+                        }
+                        placeholder={
+                          item.placeholder
+                        }
+                        className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                      />
 
-                    <FaLinkedin className="text-cyan-400" />
-
-                    <input
-                      type="text"
-                      placeholder="LinkedIn Profile"
-                      className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
-                    />
-
-                  </div>
-
-                  <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-
-                    <FaGithub className="text-cyan-400" />
-
-                    <input
-                      type="text"
-                      placeholder="GitHub Profile"
-                      className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
-                    />
-
-                  </div>
+                    </div>
+                  ))}
 
                 </div>
 
@@ -305,18 +525,19 @@ function EditProfile() {
               <div className="mt-12">
 
                 <h2 className="text-3xl font-bold text-white mb-6">
-
                   Skills
-
                 </h2>
 
-                {/* ADD SKILL */}
                 <div className="flex gap-4">
 
                   <input
                     type="text"
                     value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
+                    onChange={(e) =>
+                      setSkillInput(
+                        e.target.value
+                      )
+                    }
                     placeholder="Add a skill"
                     className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400"
                   />
@@ -335,31 +556,40 @@ function EditProfile() {
                 {/* SKILLS LIST */}
                 <div className="flex flex-wrap gap-4 mt-8">
 
-                  {skills.map((skill, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 bg-cyan-500/10 border border-cyan-400/20 px-5 py-3 rounded-2xl text-cyan-300"
-                    >
-
-                      {skill}
-
-                      <button
-                        onClick={() => removeSkill(index)}
-                        className="text-red-400 hover:text-red-500"
+                  {skills.map(
+                    (
+                      skill,
+                      index
+                    ) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 bg-cyan-500/10 border border-cyan-400/20 px-5 py-3 rounded-2xl text-cyan-300"
                       >
 
-                        <FaTrash />
+                        {skill}
 
-                      </button>
+                        <button
+                          onClick={() =>
+                            removeSkill(
+                              index
+                            )
+                          }
+                          className="text-red-400 hover:text-red-500"
+                        >
 
-                    </div>
-                  ))}
+                          <FaTrash />
+
+                        </button>
+
+                      </div>
+                    )
+                  )}
 
                 </div>
 
               </div>
 
-              {/* SAVE BUTTON */}
+              {/* SAVE */}
               <motion.button
                 whileHover={{
                   scale: 1.02,
@@ -367,12 +597,16 @@ function EditProfile() {
                 whileTap={{
                   scale: 0.98,
                 }}
-                className="mt-14 w-full bg-gradient-to-r from-blue-600 to-cyan-500 py-5 rounded-2xl text-white font-bold text-lg shadow-2xl hover:shadow-cyan-500/30 transition-all duration-300 flex items-center justify-center gap-4"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="mt-14 w-full bg-gradient-to-r from-blue-600 to-cyan-500 py-5 rounded-2xl text-white font-bold text-lg shadow-2xl flex items-center justify-center gap-4"
               >
 
                 <FaSave />
 
-                Save Profile
+                {loading
+                  ? "Saving..."
+                  : "Save Profile"}
 
               </motion.button>
 
@@ -383,7 +617,6 @@ function EditProfile() {
         </div>
 
       </section>
-
     </>
   );
 }

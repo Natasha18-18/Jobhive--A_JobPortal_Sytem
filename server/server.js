@@ -2,20 +2,44 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "path";
+
+import { fileURLToPath } from "url";
 
 import connectDB from "./config/db.js";
+
 import authRoutes from "./routes/authRoutes.js";
+import candidateRoutes from "./routes/candidateRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
+// ======================
+// FIX __dirname
+// ======================
+
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = path.dirname(__filename);
+
+// ======================
 // DATABASE CONNECT
+// ======================
+
 connectDB();
 
+// ======================
 // MIDDLEWARES
+// ======================
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
 
 app.use(
   cors({
@@ -26,15 +50,35 @@ app.use(
 
 app.use(cookieParser());
 
+// ======================
+// STATIC FOLDER
+// ======================
+
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"))
+);
+
+// ======================
 // TEST ROUTE
+// ======================
+
 app.get("/", (req, res) => {
   res.send("Job Portal Backend Running 🚀");
 });
 
-// API ROUTES
+// ======================
+// ROUTES
+// ======================
+
 app.use("/api/auth", authRoutes);
 
+app.use("/api/candidate", candidateRoutes);
+
+// ======================
 // 404 HANDLER
+// ======================
+
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -42,7 +86,10 @@ app.use((req, res) => {
   });
 });
 
+// ======================
 // SERVER
+// ======================
+
 const PORT = process.env.PORT || 5002;
 
 app.listen(PORT, () => {

@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+
+import axios from "axios";
+
 import { motion } from "framer-motion";
 
 import {
@@ -14,6 +18,44 @@ import {
 } from "react-icons/fa";
 
 function Settings() {
+
+  const [candidate, setCandidate] = useState(null);
+
+  // ======================
+  // FETCH PROFILE
+  // ======================
+
+  useEffect(() => {
+
+    fetchProfile();
+
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+
+      const res = await axios.get(
+        "http://localhost:5002/api/candidate/all"
+      );
+
+      console.log("ALL DATA => ", res.data.data);
+
+      if (res.data.success) {
+
+        const latestProfile =
+          res.data.data.at(-1);
+
+        console.log("LATEST PROFILE => ", latestProfile);
+
+        setCandidate(latestProfile);
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
 
   return (
     <section className="min-h-screen bg-gradient-to-br from-[#050816] via-[#0b1120] to-[#111827] pt-32 pb-20 px-6 overflow-hidden relative">
@@ -47,6 +89,39 @@ function Settings() {
             className="bg-white/5 border border-white/10 rounded-[30px] p-6 h-fit backdrop-blur-2xl"
           >
 
+            {/* PROFILE IMAGE */}
+            <div className="flex flex-col items-center mb-8">
+
+              <img
+                src={
+                  candidate?.profileImage
+                    ? `http://localhost:5002/uploads/${candidate.profileImage}?t=${Date.now()}`
+                    : "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                }
+                alt="profile"
+                key={candidate?.profileImage}
+                onError={(e) => {
+                  e.target.src =
+                    "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                }}
+                className="w-32 h-32 rounded-full object-cover border-4 border-cyan-500 shadow-2xl"
+              />
+
+              <h2 className="text-white text-2xl font-bold mt-5">
+
+                {candidate?.fullName || "User"}
+
+              </h2>
+
+              <p className="text-cyan-400 mt-2">
+
+                {candidate?.role || "Developer"}
+
+              </p>
+
+            </div>
+
+            {/* MENU */}
             <div className="space-y-4">
 
               {[
@@ -100,8 +175,9 @@ function Settings() {
 
                     <input
                       type="text"
-                      placeholder="Harsh Sharma"
-                      className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                      value={candidate?.fullName || ""}
+                      readOnly
+                      className="bg-transparent outline-none w-full text-white"
                     />
 
                   </div>
@@ -121,8 +197,9 @@ function Settings() {
 
                     <input
                       type="email"
-                      placeholder="harsh@gmail.com"
-                      className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                      value={candidate?.email || ""}
+                      readOnly
+                      className="bg-transparent outline-none w-full text-white"
                     />
 
                   </div>
@@ -142,19 +219,20 @@ function Settings() {
 
                     <input
                       type="text"
-                      placeholder="+91 9876543210"
-                      className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                      value={candidate?.phone || ""}
+                      readOnly
+                      className="bg-transparent outline-none w-full text-white"
                     />
 
                   </div>
 
                 </div>
 
-                {/* LOCATION */}
+                {/* ROLE */}
                 <div>
 
                   <label className="text-gray-300 text-sm mb-3 block">
-                    Location
+                    Role
                   </label>
 
                   <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
@@ -163,8 +241,9 @@ function Settings() {
 
                     <input
                       type="text"
-                      placeholder="Delhi, India"
-                      className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                      value={candidate?.role || ""}
+                      readOnly
+                      className="bg-transparent outline-none w-full text-white"
                     />
 
                   </div>
@@ -197,8 +276,9 @@ function Settings() {
 
                     <input
                       type="text"
-                      placeholder="https://linkedin.com/in/username"
-                      className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                      value={candidate?.linkedin || ""}
+                      readOnly
+                      className="bg-transparent outline-none w-full text-white"
                     />
 
                   </div>
@@ -218,8 +298,9 @@ function Settings() {
 
                     <input
                       type="text"
-                      placeholder="https://github.com/username"
-                      className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                      value={candidate?.github || ""}
+                      readOnly
+                      className="bg-transparent outline-none w-full text-white"
                     />
 
                   </div>
@@ -239,95 +320,14 @@ function Settings() {
 
                     <input
                       type="text"
-                      placeholder="https://yourportfolio.com"
-                      className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
+                      value={candidate?.portfolio || ""}
+                      readOnly
+                      className="bg-transparent outline-none w-full text-white"
                     />
 
                   </div>
 
                 </div>
-
-              </div>
-
-            </div>
-
-            {/* NOTIFICATIONS */}
-            <div className="mt-14">
-
-              <h2 className="text-3xl font-bold text-white mb-8">
-                Notifications
-              </h2>
-
-              <div className="space-y-5">
-
-                {[
-                  "Email Notifications",
-                  "Job Alerts",
-                  "Application Updates",
-                  "Company Messages",
-                ].map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl px-5 py-5"
-                  >
-
-                    <div className="flex items-center gap-4">
-
-                      <FaBell className="text-cyan-400" />
-
-                      <span className="text-gray-300">
-                        {item}
-                      </span>
-
-                    </div>
-
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="w-5 h-5 accent-cyan-500"
-                    />
-
-                  </div>
-                ))}
-
-              </div>
-
-            </div>
-
-            {/* SECURITY */}
-            <div className="mt-14">
-
-              <h2 className="text-3xl font-bold text-white mb-8">
-                Security
-              </h2>
-
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-5">
-
-                <div className="flex items-center gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-2xl">
-
-                    <FaShieldAlt />
-
-                  </div>
-
-                  <div>
-
-                    <h3 className="text-white font-semibold text-lg">
-                      Two-Factor Authentication
-                    </h3>
-
-                    <p className="text-gray-400 text-sm">
-                      Add extra security to your account
-                    </p>
-
-                  </div>
-
-                </div>
-
-                <button className="bg-gradient-to-r from-blue-600 to-cyan-500 px-6 py-3 rounded-2xl text-white font-semibold shadow-xl">
-                  Enable
-                </button>
 
               </div>
 

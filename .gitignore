@@ -5,3 +5,6 @@ server/.env
 # node
 client/node_modules
 server/node_modules
+
+# uploads
+server/uploads

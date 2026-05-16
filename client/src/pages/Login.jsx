@@ -213,40 +213,48 @@ function Login() {
 
       }
 
-      // SUCCESS
-      if (response.data.success) {
+if (response.data.success) {
 
-        toast.success(
-          response.data.message ||
-          "Login successful 🎉"
-        );
+  toast.success(
+    response.data.message ||
+    "Login successful 🎉"
+  );
 
-        // SAVE TOKEN
-        localStorage.setItem(
-          "token",
-          response.data.token
-        );
+  // SAVE TOKEN
+  localStorage.setItem(
+    "token",
+    response.data.token
+  );
 
-        localStorage.setItem(
-          "user",
-          JSON.stringify(response.data.user)
-        );
+  // SAVE USER
+  localStorage.setItem(
+    "user",
+    JSON.stringify(response.data.user)
+  );
 
-        // REDIRECT
-        if (role === "recruiter") {
+  // OPTIONAL LOGIN FLAG
+  localStorage.setItem(
+    "isLoggedIn",
+    "true"
+  );
 
-          navigate("/recruiter/dashboard");
+  // FORCE REFRESH NAVBAR DATA
+  window.dispatchEvent(
+    new Event("storage")
+  );
 
-        }
+  // REDIRECT
+  if (response.data.user.role === "recruiter") {
 
-        else {
+    navigate("/recruiter/dashboard");
 
-          navigate("/");
+  } else {
 
-        }
+    navigate("/");
 
-      }
+  }
 
+}
       else {
 
         toast.error(
