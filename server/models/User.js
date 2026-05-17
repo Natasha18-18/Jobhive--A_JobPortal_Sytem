@@ -25,7 +25,11 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["candidate", "recruiter", "admin"],
+      enum: [
+        "candidate",
+        "recruiter",
+        "admin",
+      ],
       default: "candidate",
     },
 
@@ -33,12 +37,75 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // ==========================
+    // COMMON PROFILE IMAGE
+    // ==========================
+
+    profileImage: {
+      type: String,
+      default: "",
+    },
+
+    // ==========================
+    // RECRUITER PROFILE
+    // ==========================
+
+    recruiterProfile: {
+      companyName: {
+        type: String,
+        default: "",
+      },
+
+      industry: {
+        type: String,
+        default: "",
+      },
+
+      location: {
+        type: String,
+        default: "",
+      },
+
+      website: {
+        type: String,
+        default: "",
+      },
+
+      linkedin: {
+        type: String,
+        default: "",
+      },
+
+      experience: {
+        type: String,
+        default: "",
+      },
+
+      skills: {
+        type: String,
+        default: "",
+      },
+
+      companyDescription: {
+        type: String,
+        default: "",
+      },
+
+      companyLogo: {
+        type: String,
+        default: "",
+      },
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model(
+  "User",
+  userSchema
+);
 
 export default User;

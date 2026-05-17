@@ -1,10 +1,15 @@
-import {BrowserRouter, Routes, Route,} from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
+
 import Navbar from "./components/NavBar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoutes";
 
 // =========================
-// PAGES
+// USER PAGES
 // =========================
 
 import Home from "./pages/Home";
@@ -14,31 +19,36 @@ import ApplyJob from "./pages/ApplyJob";
 import Companies from "./pages/Companies";
 import Contact from "./pages/ContactUs";
 import About from "./pages/AboutUs";
+import Notifications from "./pages/Notification";
+import SavedJobs from "./pages/SavedJobs";
+import CandidateMessages from "./pages/CandidateMessage";
 import EditProfile from "./pages/EditProfile";
 import Settings from "./pages/ProfileSetting";
-
 import ChangePassword from "./pages/Password";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-
 import ForgotPassword from "./pages/ForgotPassword";
 
 // =========================
-// RECRUITER
+// RECRUITER PAGES
 // =========================
 
-import RecruiterNavbar from "./recruiter/RecruiterNavbar";
 import RecruiterDashboard from "./recruiter/recruiterDashboard";
 import UploadJob from "./recruiter/Uploadjob";
 import MyJobs from "./recruiter/MyJob";
 import Applicants from "./recruiter/Applicant";
 import RecruiterProfile from "./recruiter/RecruiterProfile";
+import RecruiterNotifications from "./recruiter/RecruiterNotification";
+import RecruiterMessages from "./recruiter/RecruiterMessage";
+import ApplicantDetails from "./recruiter/ApplicationDetail";
+import EditJob from "./recruiter/EditJob";
 
 function App() {
 
   return (
     <BrowserRouter>
 
+      {/* NAVBAR */}
       <Navbar />
 
       <Routes>
@@ -68,16 +78,14 @@ function App() {
         />
 
         {/* ========================= */}
-        {/* PROTECTED USER ROUTES */}
+        {/* USER ROUTES */}
         {/* ========================= */}
 
         <Route
           path="/about"
           element={
             <ProtectedRoute>
-
               <About />
-
             </ProtectedRoute>
           }
         />
@@ -86,9 +94,7 @@ function App() {
           path="/jobs"
           element={
             <ProtectedRoute>
-
               <Jobs />
-
             </ProtectedRoute>
           }
         />
@@ -97,20 +103,17 @@ function App() {
           path="/jobs/:id"
           element={
             <ProtectedRoute>
-
               <JobDetail />
-
             </ProtectedRoute>
           }
         />
 
+        {/* FIXED APPLY ROUTE */}
         <Route
-          path="/apply-job"
+          path="/apply-job/:id"
           element={
             <ProtectedRoute>
-
               <ApplyJob />
-
             </ProtectedRoute>
           }
         />
@@ -119,9 +122,7 @@ function App() {
           path="/companies"
           element={
             <ProtectedRoute>
-
               <Companies />
-
             </ProtectedRoute>
           }
         />
@@ -130,9 +131,7 @@ function App() {
           path="/contact"
           element={
             <ProtectedRoute>
-
               <Contact />
-
             </ProtectedRoute>
           }
         />
@@ -141,9 +140,7 @@ function App() {
           path="/profile"
           element={
             <ProtectedRoute>
-
               <EditProfile />
-
             </ProtectedRoute>
           }
         />
@@ -152,9 +149,7 @@ function App() {
           path="/settings"
           element={
             <ProtectedRoute>
-
               <Settings />
-
             </ProtectedRoute>
           }
         />
@@ -163,9 +158,34 @@ function App() {
           path="/change-password"
           element={
             <ProtectedRoute>
-
               <ChangePassword />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <CandidateMessages />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/saved-jobs"
+          element={
+            <ProtectedRoute>
+              <SavedJobs />
             </ProtectedRoute>
           }
         />
@@ -178,9 +198,7 @@ function App() {
           path="/recruiter/dashboard"
           element={
             <ProtectedRoute>
-
               <RecruiterDashboard />
-
             </ProtectedRoute>
           }
         />
@@ -189,9 +207,7 @@ function App() {
           path="/recruiter/upload-job"
           element={
             <ProtectedRoute>
-
               <UploadJob />
-
             </ProtectedRoute>
           }
         />
@@ -200,20 +216,17 @@ function App() {
           path="/recruiter/my-jobs"
           element={
             <ProtectedRoute>
-
               <MyJobs />
-
             </ProtectedRoute>
           }
         />
 
+        {/* FIXED APPLICANTS ROUTE */}
         <Route
-          path="/recruiter/applicants"
+          path="/recruiter/applicants/:id"
           element={
             <ProtectedRoute>
-
               <Applicants />
-
             </ProtectedRoute>
           }
         />
@@ -222,15 +235,50 @@ function App() {
           path="/recruiter/profile"
           element={
             <ProtectedRoute>
-
               <RecruiterProfile />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/recruiter/notifications"
+          element={
+            <ProtectedRoute>
+              <RecruiterNotifications />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/recruiter/messages"
+          element={
+            <ProtectedRoute>
+              <RecruiterMessages />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/recruiter/applicant/:id"
+          element={
+            <ProtectedRoute>
+              <ApplicantDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/recruiter/edit-job/:id"
+          element={
+            <ProtectedRoute>
+              <EditJob />
             </ProtectedRoute>
           }
         />
 
       </Routes>
 
+      {/* FOOTER */}
       <Footer />
 
     </BrowserRouter>

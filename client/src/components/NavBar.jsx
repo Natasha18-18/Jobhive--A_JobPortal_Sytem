@@ -19,8 +19,13 @@ import {
   FaUserCircle,
   FaCog,
   FaSignOutAlt,
-  FaLock,
   FaUserEdit,
+  FaPlusCircle,
+  FaClipboardList,
+  FaHome,
+  FaUserTie,
+  FaEnvelope,
+  FaBookmark,
 } from "react-icons/fa";
 
 import {
@@ -36,13 +41,12 @@ function Navbar() {
   const [profileOpen, setProfileOpen] =
     useState(false);
 
-  const [candidate, setCandidate] =
+  const [profileData, setProfileData] =
     useState(null);
 
   const [loading, setLoading] =
-    useState(true);
+    useState(false);
 
-  // USER STATE
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("user"))
   );
@@ -52,12 +56,17 @@ function Navbar() {
   const navigate = useNavigate();
 
   // =========================
-  // FETCH PROFILE
+  // ROLE CHECK
   // =========================
 
-useEffect(() => {
+  const isRecruiter =
+    user?.role === "recruiter";
 
-  const loadUser = () => {
+  // =========================
+  // LOAD USER
+  // =========================
+
+  useEffect(() => {
 
     const storedUser = JSON.parse(
       localStorage.getItem("user")
@@ -65,83 +74,13 @@ useEffect(() => {
 
     setUser(storedUser);
 
-    if (storedUser?._id) {
+    // =========================
+    // NO API CALL
+    // =========================
 
-      fetchProfile(storedUser);
+    setProfileData(storedUser);
 
-    } else {
-
-      setLoading(false);
-
-    }
-
-  };
-
-  loadUser();
-
-  window.addEventListener(
-    "profileUpdated",
-    loadUser
-  );
-
-  return () => {
-
-    window.removeEventListener(
-      "profileUpdated",
-      loadUser
-    );
-
-  };
-
-}, [location.pathname]);
-
-  const fetchProfile = async (
-    currentUser
-  ) => {
-
-    try {
-
-      const res = await axios.get(
-        `http://localhost:5002/api/candidate/${currentUser._id}`,
-        {
-          withCredentials: true,
-        }
-      );
-
-      if (res.data.success) {
-
-        setCandidate(res.data.data);
-
-        // UPDATE USER
-        const updatedUser = {
-          ...currentUser,
-          fullName:
-            res.data.data.fullName,
-          email:
-            res.data.data.email,
-          profileImage:
-            res.data.data.profileImage,
-        };
-
-        localStorage.setItem(
-          "user",
-          JSON.stringify(updatedUser)
-        );
-
-        setUser(updatedUser);
-
-      }
-
-    } catch (error) {
-
-      console.log(error);
-
-    } finally {
-
-      setLoading(false);
-
-    }
-  };
+  }, [location.pathname]);
 
   // =========================
   // LOGOUT
@@ -155,7 +94,7 @@ useEffect(() => {
 
     setUser(null);
 
-    setCandidate(null);
+    setProfileData(null);
 
     navigate("/login");
 
@@ -165,7 +104,7 @@ useEffect(() => {
   // NAV LINKS
   // =========================
 
-  const navLinks = [
+  const candidateLinks = [
     {
       name: "Home",
       path: "/",
@@ -192,6 +131,36 @@ useEffect(() => {
     },
   ];
 
+  const recruiterLinks = [
+    {
+      name: "Dashboard",
+      path: "/recruiter/dashboard",
+      icon: <FaHome />,
+    },
+
+    {
+      name: "Upload Job",
+      path: "/recruiter/upload-job",
+      icon: <FaPlusCircle />,
+    },
+
+    {
+      name: "My Jobs",
+      path: "/recruiter/my-jobs",
+      icon: <FaBriefcase />,
+    },
+
+    // {
+    //   name: "Applicants",
+    //   path: "/recruiter/applicants",
+    //   icon: <FaClipboardList />,
+    // },
+  ];
+
+  const navLinks = isRecruiter
+    ? recruiterLinks
+    : candidateLinks;
+
   return (
     <motion.nav
       initial={{
@@ -215,7 +184,11 @@ useEffect(() => {
 
         {/* LOGO */}
         <Link
-          to="/"
+          to={
+            isRecruiter
+              ? "/recruiter/dashboard"
+              : "/"
+          }
           className="flex items-center gap-3"
         >
 
@@ -235,16 +208,25 @@ useEffect(() => {
 
             <h1 className="text-2xl font-extrabold text-white">
 
-              Job
+              {isRecruiter
+                ? "Recruiter"
+                : "Job"}
+
               <span className="text-cyan-400">
-                Portal
+
+                {isRecruiter
+                  ? " Panel"
+                  : " Portal"}
+
               </span>
 
             </h1>
 
             <p className="text-xs text-gray-400 -mt-1">
 
-              Find Your Dream Career
+              {isRecruiter
+                ? "Manage Hiring Efficiently"
+                : "Find Your Dream Career"}
 
             </p>
 
@@ -281,7 +263,9 @@ useEffect(() => {
                   />
                 )}
 
-                <span className="relative z-10">
+                <span className="relative z-10 flex items-center gap-2">
+
+                  {link.icon}
 
                   {link.name}
 
@@ -296,7 +280,6 @@ useEffect(() => {
         {/* RIGHT SIDE */}
         <div className="hidden lg:flex items-center gap-4">
 
-          {/* LOADING */}
           {loading ? (
             <div className="text-gray-400 text-sm">
 
@@ -307,21 +290,58 @@ useEffect(() => {
             <>
 
               {/* NOTIFICATION */}
-              <motion.button
-                whileHover={{
-                  scale: 1.08,
-                }}
-                whileTap={{
-                  scale: 0.95,
-                }}
-                className="relative w-12 h-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 hover:text-cyan-400 transition"
+              <Link
+                to={
+                  isRecruiter
+                    ? "/recruiter/notifications"
+                    : "/notifications"
+                }
               >
 
-                <FaBell className="text-lg" />
+                <motion.button
+                  whileHover={{
+                    scale: 1.08,
+                  }}
+                  whileTap={{
+                    scale: 0.95,
+                  }}
+                  className="relative w-12 h-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 hover:text-cyan-400 transition"
+                >
 
-                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                  <FaBell className="text-lg" />
 
-              </motion.button>
+                  <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+
+                </motion.button>
+
+              </Link>
+
+              {/* MESSAGE */}
+              <Link
+                to={
+                  isRecruiter
+                    ? "/recruiter/messages"
+                    : "/messages"
+                }
+              >
+
+                <motion.button
+                  whileHover={{
+                    scale: 1.08,
+                  }}
+                  whileTap={{
+                    scale: 0.95,
+                  }}
+                  className="relative w-12 h-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 hover:text-cyan-400 transition"
+                >
+
+                  <FaEnvelope className="text-lg" />
+
+                  <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-green-500 rounded-full"></span>
+
+                </motion.button>
+
+              </Link>
 
               {/* PROFILE */}
               <div className="relative">
@@ -341,10 +361,9 @@ useEffect(() => {
                   className="flex items-center gap-3 bg-white/10 border border-white/10 px-4 py-2 rounded-2xl text-white hover:border-cyan-400/40 transition-all duration-300"
                 >
 
-                  {/* IMAGE */}
-                  {candidate?.profileImage?.trim() ? (
+                  {profileData?.profileImage ? (
                     <img
-                      src={`http://localhost:5002/uploads/${candidate.profileImage}`}
+                      src={`http://localhost:5002/uploads/${profileData.profileImage}`}
                       alt="profile"
                       className="w-12 h-12 rounded-full object-cover border-2 border-cyan-400 shadow-lg"
                     />
@@ -352,21 +371,20 @@ useEffect(() => {
                     <FaUserCircle className="text-4xl text-cyan-400" />
                   )}
 
-                  {/* INFO */}
                   <div className="text-left">
 
                     <h3 className="text-sm font-semibold">
 
-                      {candidate?.fullName ||
-                        user?.fullName ||
+                      {profileData?.fullName ||
                         "User"}
 
                     </h3>
 
                     <p className="text-xs text-gray-400">
 
-                      {candidate?.role ||
-                        "Candidate"}
+                      {isRecruiter
+                        ? "Recruiter"
+                        : "Candidate"}
 
                     </p>
 
@@ -415,16 +433,16 @@ useEffect(() => {
 
                         <div className="flex items-center gap-4">
 
-                          {candidate?.profileImage ? (
+                          {profileData?.profileImage ? (
                             <img
-                              src={`http://localhost:5002/uploads/${candidate.profileImage}`}
+                              src={`http://localhost:5002/uploads/${profileData.profileImage}`}
                               alt="profile"
                               className="w-16 h-16 rounded-2xl object-cover border-2 border-cyan-400"
                             />
                           ) : (
                             <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-3xl">
 
-                              <FaUserCircle />
+                              <FaUserTie />
 
                             </div>
                           )}
@@ -433,15 +451,14 @@ useEffect(() => {
 
                             <h2 className="text-white font-bold text-lg">
 
-                              {candidate?.fullName ||
-                                user?.fullName}
+                              {profileData?.fullName ||
+                                "User"}
 
                             </h2>
 
                             <p className="text-gray-400 text-sm">
 
-                              {candidate?.email ||
-                                user?.email}
+                              {profileData?.email}
 
                             </p>
 
@@ -455,7 +472,11 @@ useEffect(() => {
                       <div className="p-3 space-y-2">
 
                         <Link
-                          to="/profile"
+                          to={
+                            isRecruiter
+                              ? "/recruiter/profile"
+                              : "/profile"
+                          }
                           onClick={() =>
                             setProfileOpen(
                               false
@@ -469,6 +490,22 @@ useEffect(() => {
                           Edit Profile
 
                         </Link>
+
+                        {!isRecruiter && (
+                          <Link
+                            to="/saved-jobs"
+                            onClick={() =>
+                              setProfileOpen(false)
+                            }
+                            className="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-300 hover:bg-white/5 hover:text-cyan-400 transition"
+                          >
+
+                            <FaBookmark />
+
+                            Saved Jobs
+
+                          </Link>
+                        )}
 
                         <Link
                           to="/settings"
@@ -486,37 +523,6 @@ useEffect(() => {
 
                         </Link>
 
-                        {/* <Link
-                          to="/change-password"
-                          onClick={() =>
-                            setProfileOpen(
-                              false
-                            )
-                          }
-                          className="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-300 hover:bg-white/5 hover:text-cyan-400 transition"
-                        >
-
-                          <FaLock />
-
-                          Change Password
-
-                        </Link> */}
-
-                        {/* RESUME */}
-                        {candidate?.resume && (
-                          <a
-                            href={`http://localhost:5002/uploads/${candidate.resume}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-300 hover:bg-white/5 hover:text-cyan-400 transition"
-                          >
-
-                            📄 View Resume
-
-                          </a>
-                        )}
-
-                        {/* LOGOUT */}
                         <button
                           onClick={
                             handleLogout
@@ -612,18 +618,26 @@ useEffect(() => {
                     }`}
                   >
 
-                    {link.name}
+                    <div className="flex items-center gap-3">
+
+                      {link.icon}
+
+                      {link.name}
+
+                    </div>
 
                   </Link>
                 )
               )}
 
-              {/* MOBILE USER */}
-              {user ? (
+              {user && (
                 <>
-
                   <Link
-                    to="/profile"
+                    to={
+                      isRecruiter
+                        ? "/recruiter/profile"
+                        : "/profile"
+                    }
                     className="px-5 py-4 rounded-2xl text-gray-300 hover:bg-white/10 hover:text-cyan-400 transition"
                   >
 
@@ -641,17 +655,7 @@ useEffect(() => {
                     Logout
 
                   </button>
-
                 </>
-              ) : (
-                <Link
-                  to="/login"
-                  className="px-5 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-center font-semibold"
-                >
-
-                  Login
-
-                </Link>
               )}
 
             </div>

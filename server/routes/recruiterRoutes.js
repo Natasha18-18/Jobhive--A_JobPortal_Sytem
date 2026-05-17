@@ -11,22 +11,29 @@ import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
+// ==============================
 // GET PROFILE
+// ==============================
+
 router.get(
   "/profile",
   protect,
   getRecruiterProfile
 );
 
+// ==============================
 // UPDATE PROFILE
+// ==============================
+
 router.put(
-  "/update-profile",
+  "/profile",
   protect,
   upload.fields([
     {
       name: "profileImage",
       maxCount: 1,
     },
+
     {
       name: "companyLogo",
       maxCount: 1,

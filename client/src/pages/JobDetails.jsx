@@ -243,7 +243,7 @@ function JobDetail() {
             {/* BUTTON */}
             <div className="mt-16">
 
-              <Link to="/apply-job">
+              <Link to={`/apply-job/${job._id}`}>
 
                 <button className="bg-gradient-to-r from-blue-600 to-cyan-500 px-10 py-5 rounded-2xl text-white font-semibold flex items-center gap-3">
 
