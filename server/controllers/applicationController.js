@@ -2,7 +2,6 @@ import Application from "../models/Application.js";
 import Job from "../models/jobModel.js";
 import Notification from "../models/notificationModel.js";
 import User from "../models/User.js";
-import createNotification from "../utils/createNotification.js";
 import sendEmail from "../utils/sendEmail.js";
 
 
@@ -10,22 +9,16 @@ import sendEmail from "../utils/sendEmail.js";
 // APPLY JOB
 // ==========================
 
-export const applyJob = async (
-  req,
-  res
-) => {
+export const applyJob = async (req, res) => {
 
   try {
 
-    const jobId =
-      req.params.id;
+    const jobId = req.params.id;
 
-    const userId =
-      req.user._id;
+    const userId = req.user._id;
 
     // FIND JOB
-    const job =
-      await Job.findById(jobId);
+    const job = await Job.findById(jobId);
 
     if (!job) {
 
@@ -37,20 +30,16 @@ export const applyJob = async (
     }
 
     // RECRUITER CANNOT APPLY
-    if (
-      req.user.role ===
-      "recruiter"
-    ) {
+    if (req.user.role === "recruiter") {
 
       return res.status(400).json({
         success: false,
-        message:
-          "Recruiters cannot apply",
+        message: "Recruiters cannot apply",
       });
 
     }
 
-    // ALREADY APPLIED
+    // CHECK ALREADY APPLIED
     const alreadyApplied =
       await Application.findOne({
         job: jobId,
@@ -61,8 +50,7 @@ export const applyJob = async (
 
       return res.status(400).json({
         success: false,
-        message:
-          "Already applied to this job",
+        message: "Already applied to this job",
       });
 
     }
@@ -71,29 +59,23 @@ export const applyJob = async (
     const application =
       await Application.create({
         applicant: userId,
-
-        recruiter:
-          job.recruiter,
-
+        recruiter: job.recruiter,
         job: jobId,
-
         status: "Pending",
       });
 
     // PUSH APPLICANT
-    if (
-      !job.applicants.includes(
-        userId
-      )
-    ) {
+    if (!job.applicants.includes(userId)) {
 
-      job.applicants.push(
-        userId
-      );
+      job.applicants.push(userId);
+
+      await job.save();
 
     }
 
-    await job.save();
+    // FIND RECRUITER
+    const recruiter =
+      await User.findById(job.recruiter);
 
     // ==========================
     // CREATE RECRUITER NOTIFICATION
@@ -102,8 +84,7 @@ export const applyJob = async (
     await Notification.create({
       user: job.recruiter,
 
-      title:
-        "New Job Application",
+      title: "New Job Application",
 
       message:
         `${req.user.fullName} applied for ${job.title}`,
@@ -115,36 +96,22 @@ export const applyJob = async (
     // SEND EMAIL TO RECRUITER
     // ==========================
 
-    const recruiter =
-      await User.findById(
-        job.recruiter
-      );
-
     if (recruiter) {
 
       await sendEmail({
         to: recruiter.email,
 
-        subject:
-          "New Job Application Received",
+        subject: "New Job Application Received",
 
         html: `
           <div style="font-family:sans-serif;">
 
-            <h2>
-              New Applicant Applied
-            </h2>
+            <h2>New Applicant Applied</h2>
 
             <p>
-              <b>
-                ${req.user.fullName}
-              </b>
-
+              <b>${req.user.fullName}</b>
               applied for your job:
-
-              <b>
-                ${job.title}
-              </b>
+              <b>${job.title}</b>
             </p>
 
           </div>
@@ -155,10 +122,7 @@ export const applyJob = async (
 
     res.status(201).json({
       success: true,
-
-      message:
-        "Application submitted successfully",
-
+      message: "Application submitted successfully",
       application,
     });
 
@@ -168,9 +132,7 @@ export const applyJob = async (
 
     res.status(500).json({
       success: false,
-
-      message:
-        error.message,
+      message: error.message,
     });
 
   }
@@ -189,8 +151,7 @@ export const getMyApplications =
 
       const applications =
         await Application.find({
-          applicant:
-            req.user._id,
+          applicant: req.user._id,
         })
           .populate(
             "job",
@@ -202,7 +163,6 @@ export const getMyApplications =
 
       res.status(200).json({
         success: true,
-
         applications,
       });
 
@@ -212,9 +172,7 @@ export const getMyApplications =
 
       res.status(500).json({
         success: false,
-
-        message:
-          error.message,
+        message: error.message,
       });
 
     }
@@ -231,22 +189,17 @@ export const getApplicants =
 
     try {
 
-      const jobId =
-        req.params.jobId;
+      const jobId = req.params.jobId;
 
       // FIND JOB
       const job =
-        await Job.findById(
-          jobId
-        );
+        await Job.findById(jobId);
 
       if (!job) {
 
         return res.status(404).json({
           success: false,
-
-          message:
-            "Job not found",
+          message: "Job not found",
         });
 
       }
@@ -259,9 +212,7 @@ export const getApplicants =
 
         return res.status(403).json({
           success: false,
-
-          message:
-            "Access denied",
+          message: "Access denied",
         });
 
       }
@@ -285,7 +236,6 @@ export const getApplicants =
 
       res.status(200).json({
         success: true,
-
         applications,
       });
 
@@ -295,9 +245,7 @@ export const getApplicants =
 
       res.status(500).json({
         success: false,
-
-        message:
-          error.message,
+        message: error.message,
       });
 
     }
@@ -318,27 +266,20 @@ export const getSingleApplication =
         await Application.findById(
           req.params.id
         )
-          .populate(
-            "applicant"
-          )
-          .populate(
-            "job"
-          );
+          .populate("applicant")
+          .populate("job");
 
       if (!application) {
 
         return res.status(404).json({
           success: false,
-
-          message:
-            "Application not found",
+          message: "Application not found",
         });
 
       }
 
       res.status(200).json({
         success: true,
-
         application,
       });
 
@@ -348,9 +289,7 @@ export const getSingleApplication =
 
       res.status(500).json({
         success: false,
-
-        message:
-          error.message,
+        message: error.message,
       });
 
     }
@@ -367,8 +306,7 @@ export const updateApplicationStatus =
 
     try {
 
-      const { status } =
-        req.body;
+      const { status } = req.body;
 
       // VALID STATUS
       if (
@@ -381,9 +319,7 @@ export const updateApplicationStatus =
 
         return res.status(400).json({
           success: false,
-
-          message:
-            "Invalid status",
+          message: "Invalid status",
         });
 
       }
@@ -393,20 +329,14 @@ export const updateApplicationStatus =
         await Application.findById(
           req.params.id
         )
-          .populate(
-            "applicant"
-          )
-          .populate(
-            "job"
-          );
+          .populate("applicant")
+          .populate("job");
 
       if (!application) {
 
         return res.status(404).json({
           success: false,
-
-          message:
-            "Application not found",
+          message: "Application not found",
         });
 
       }
@@ -421,9 +351,7 @@ export const updateApplicationStatus =
 
         return res.status(404).json({
           success: false,
-
-          message:
-            "Job not found",
+          message: "Job not found",
         });
 
       }
@@ -436,16 +364,13 @@ export const updateApplicationStatus =
 
         return res.status(403).json({
           success: false,
-
-          message:
-            "Access denied",
+          message: "Access denied",
         });
 
       }
 
       // UPDATE STATUS
-      application.status =
-        status;
+      application.status = status;
 
       await application.save();
 
@@ -454,11 +379,9 @@ export const updateApplicationStatus =
       // ==========================
 
       await Notification.create({
-        user:
-          application.applicant._id,
+        user: application.applicant._id,
 
-        title:
-          `Application ${status}`,
+        title: `Application ${status}`,
 
         message:
           status === "Accepted"
@@ -476,8 +399,7 @@ export const updateApplicationStatus =
       // ==========================
 
       await sendEmail({
-        to:
-          application.applicant.email,
+        to: application.applicant.email,
 
         subject:
           status === "Accepted"
@@ -489,9 +411,7 @@ export const updateApplicationStatus =
             ? `
               <div style="font-family:sans-serif;">
 
-                <h2>
-                  Congratulations 🎉
-                </h2>
+                <h2>Congratulations 🎉</h2>
 
                 <p>
                   Your application for
@@ -504,9 +424,7 @@ export const updateApplicationStatus =
             : `
               <div style="font-family:sans-serif;">
 
-                <h2>
-                  Application Update
-                </h2>
+                <h2>Application Update</h2>
 
                 <p>
                   Your application for
@@ -520,10 +438,7 @@ export const updateApplicationStatus =
 
       res.status(200).json({
         success: true,
-
-        message:
-          `Application ${status}`,
-
+        message: `Application ${status}`,
         application,
       });
 
@@ -533,9 +448,7 @@ export const updateApplicationStatus =
 
       res.status(500).json({
         success: false,
-
-        message:
-          error.message,
+        message: error.message,
       });
 
     }
@@ -561,9 +474,7 @@ export const deleteApplication =
 
         return res.status(404).json({
           success: false,
-
-          message:
-            "Application not found",
+          message: "Application not found",
         });
 
       }
@@ -572,9 +483,7 @@ export const deleteApplication =
 
       res.status(200).json({
         success: true,
-
-        message:
-          "Application deleted",
+        message: "Application deleted",
       });
 
     } catch (error) {
@@ -583,9 +492,7 @@ export const deleteApplication =
 
       res.status(500).json({
         success: false,
-
-        message:
-          error.message,
+        message: error.message,
       });
 
     }
@@ -606,66 +513,46 @@ export const sendInterviewInvite =
         await Application.findById(
           req.params.id
         )
-          .populate(
-            "applicant"
-          )
-          .populate(
-            "job"
-          );
+          .populate("applicant")
+          .populate("job");
 
       if (!application) {
 
         return res.status(404).json({
           success: false,
-
-          message:
-            "Application not found",
+          message: "Application not found",
         });
 
       }
 
       // CREATE NOTIFICATION
-
       await Notification.create({
-        user:
-          application.applicant._id,
+        user: application.applicant._id,
 
-        title:
-          "Interview Invitation",
+        title: "Interview Invitation",
 
         message:
           `You have been invited for an interview for ${application.job.title}`,
 
-        type:
-          "interview",
+        type: "interview",
       });
 
       // SEND EMAIL
-
       await sendEmail({
-        to:
-          application.applicant.email,
+        to: application.applicant.email,
 
-        subject:
-          "Interview Invitation",
+        subject: "Interview Invitation",
 
         html: `
           <div style="font-family:sans-serif;">
 
-            <h2>
-              Interview Invitation
-            </h2>
+            <h2>Interview Invitation</h2>
 
-            <p>
-              Congratulations!
-            </p>
+            <p>Congratulations!</p>
 
             <p>
               You have been shortlisted for
-
-              <b>
-                ${application.job.title}
-              </b>
+              <b>${application.job.title}</b>
             </p>
 
           </div>
@@ -674,9 +561,7 @@ export const sendInterviewInvite =
 
       res.status(200).json({
         success: true,
-
-        message:
-          "Interview invite sent",
+        message: "Interview invite sent",
       });
 
     } catch (error) {
@@ -685,9 +570,7 @@ export const sendInterviewInvite =
 
       res.status(500).json({
         success: false,
-
-        message:
-          error.message,
+        message: error.message,
       });
 
     }

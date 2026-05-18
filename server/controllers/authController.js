@@ -75,7 +75,11 @@ export const register = async (req, res) => {
     // CHECK OTP
     const otpData = await OTP.findOne({ email });
 
-    if (!otpData || otpData.otp !== otp) {
+    if (
+  !otpData ||
+  String(otpData.otp) !==
+    String(otp)
+){
 
       return res.status(400).json({
         success: false,
@@ -290,7 +294,11 @@ export const verifyLoginOTP = async (req, res) => {
     // CHECK OTP
     const otpData = await OTP.findOne({ email });
 
-    if (!otpData || otpData.otp !== otp) {
+    if (
+  !otpData ||
+  String(otpData.otp) !==
+    String(otp)
+) {
 
       return res.status(400).json({
         success: false,
@@ -441,7 +449,11 @@ export const verifyForgotOTP = async (req, res) => {
     const otpData = await OTP.findOne({ email });
 
     // CHECK OTP
-    if (!otpData || otpData.otp !== otp) {
+    if (
+  !otpData ||
+  String(otpData.otp) !==
+    String(otp)
+) {
 
       return res.status(400).json({
         success: false,

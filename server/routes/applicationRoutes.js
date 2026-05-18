@@ -6,12 +6,14 @@ import {
   getApplicants,
   getSingleApplication,
   updateApplicationStatus,
+  deleteApplication,
   sendInterviewInvite,
 } from "../controllers/applicationController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
 
 // APPLY JOB
 router.post(
@@ -20,21 +22,21 @@ router.post(
   applyJob
 );
 
-// MY APPLICATIONS
+// GET MY APPLICATIONS
 router.get(
-  "/my-applications",
+  "/my",
   protect,
   getMyApplications
 );
 
-// GET APPLICANTS
+// GET JOB APPLICANTS
 router.get(
   "/applicants/:jobId",
   protect,
   getApplicants
 );
 
-// SINGLE APPLICATION
+// GET SINGLE APPLICATION
 router.get(
   "/single/:id",
   protect,
@@ -48,10 +50,18 @@ router.put(
   updateApplicationStatus
 );
 
-// SEND INTERVIEW INVITE
+// DELETE APPLICATION
+router.delete(
+  "/delete/:id",
+  protect,
+  deleteApplication
+);
+
+// INTERVIEW INVITE
 router.post(
   "/interview/:id",
   protect,
   sendInterviewInvite
 );
+
 export default router;

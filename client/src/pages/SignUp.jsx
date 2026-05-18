@@ -325,87 +325,96 @@ function Signup() {
   // VERIFY OTP
   // =========================
 
-  const handleVerifyOtp =
-    async (e) => {
+const handleVerifyOtp = async (e) => {
 
-      e.preventDefault();
+  e.preventDefault();
 
-      if (!formData.otp) {
+  if (!formData.otp) {
 
-        toast.error(
-          "Enter OTP"
-        );
+    setErrors({
+      otp: "Enter OTP",
+    });
 
-        return;
+    toast.error("Enter OTP");
 
+    return;
+  }
+
+  try {
+
+    setLoading(true);
+
+    const { data } = await API.post(
+      "/auth/register",
+      {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        otp: formData.otp,
+        role,
       }
+    );
 
-      try {
+    if (data.success) {
 
-        setLoading(true);
+      toast.success(
+        data.message ||
+        "Account created successfully 🎉"
+      );
 
-        const { data } =
-          await API.post(
-            "/auth/register",
-            {
-              fullName:
-                formData.fullName,
-              email:
-                formData.email,
-              phone:
-                formData.phone,
-              password:
-                formData.password,
-              otp:
-                formData.otp,
-              role,
-            }
-          );
+      navigate("/login");
 
-        if (data.success) {
+    } else {
 
-          toast.success(
-            data.message ||
-            "Account created successfully 🎉"
-          );
+      toast.error(data.message);
 
-          setTimeout(() => {
+    }
 
-            navigate("/login");
+  } catch (error) {
 
-          }, 1500);
+    const message =
+      error.response?.data?.message;
 
-        }
+    // EMAIL EXISTS
+    if (
+      message?.toLowerCase().includes("exists")
+    ) {
 
-        else {
+      setErrors((prev) => ({
+        ...prev,
+        email: message,
+      }));
 
-          toast.error(
-            data.message ||
-            "Registration failed"
-          );
+    }
 
-        }
+    // WRONG OTP
+    else if (
+      message?.toLowerCase().includes("otp")
+    ) {
 
-      }
+      setErrors((prev) => ({
+        ...prev,
+        otp: message,
+      }));
 
-      catch (error) {
+    }
 
-        toast.error(
-          error.response?.data
-            ?.message ||
-          "OTP verification failed"
-        );
+    else {
 
-      }
+      toast.error(
+        message || "Registration failed"
+      );
 
-      finally {
+    }
 
-        setLoading(false);
+  } finally {
 
-      }
+    setLoading(false);
 
-    };
+  }
 
+};
   return (
 
     <section className="relative overflow-hidden bg-gradient-to-br from-[#050816] via-[#0b1120] to-[#111827] min-h-screen pt-24 pb-20 px-6">
@@ -906,14 +915,15 @@ function Signup() {
                     </div>
 
                     <InputField
-                      label="Enter OTP"
-                      icon={<FaShieldAlt />}
-                      type="text"
-                      name="otp"
-                      value={formData.otp}
-                      onChange={handleChange}
-                      placeholder="Enter OTP"
-                    />
+  label="Enter OTP"
+  icon={<FaShieldAlt />}
+  type="text"
+  name="otp"
+  value={formData.otp}
+  onChange={handleChange}
+  placeholder="Enter OTP"
+  error={errors.otp}
+/>
 
                     <div className="flex items-center justify-between">
 

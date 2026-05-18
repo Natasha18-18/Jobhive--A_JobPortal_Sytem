@@ -19,6 +19,7 @@ import moment from "moment";
 
 import API from "../utils/api";
 
+
 function Notifications() {
 
   const [notifications, setNotifications] =
@@ -26,6 +27,7 @@ function Notifications() {
 
   const [loading, setLoading] =
     useState(true);
+
 
   // =========================
   // FETCH NOTIFICATIONS
@@ -37,19 +39,26 @@ function Notifications() {
 
   }, []);
 
+
   const fetchNotifications =
     async () => {
 
       try {
 
+        setLoading(true);
+
         const { data } =
           await API.get(
-            "/notifications/my"
+            "/notifications"
           );
 
-        setNotifications(data);
+        setNotifications(
+          data.notifications || []
+        );
 
       } catch (error) {
+
+        console.log(error);
 
         toast.error(
           "Failed to load notifications"
@@ -60,44 +69,53 @@ function Notifications() {
         setLoading(false);
 
       }
+
     };
+
 
   // =========================
   // MARK AS READ
   // =========================
 
-  const markAsRead = async (
-    id
-  ) => {
+  const markAsRead =
+    async (id) => {
 
-    try {
+      try {
 
-      await API.put(
-        `/notifications/read/${id}`
-      );
+        await API.put(
+          `/notifications/read/${id}`
+        );
 
-      setNotifications((prev) =>
-        prev.map((item) =>
-          item._id === id
-            ? {
-                ...item,
-                read: true,
-              }
-            : item
-        )
-      );
+        setNotifications((prev) =>
+          prev.map((item) =>
+            item._id === id
+              ? {
+                  ...item,
+                  isRead: true,
+                }
+              : item
+          )
+        );
 
-    } catch (error) {
+        toast.success(
+          "Notification marked as read"
+        );
 
-      toast.error(
-        "Failed to mark as read"
-      );
+      } catch (error) {
 
-    }
-  };
+        console.log(error);
+
+        toast.error(
+          "Failed to mark as read"
+        );
+
+      }
+
+    };
+
 
   // =========================
-  // DELETE
+  // DELETE NOTIFICATION
   // =========================
 
   const deleteNotification =
@@ -122,39 +140,48 @@ function Notifications() {
 
       } catch (error) {
 
+        console.log(error);
+
         toast.error(
           "Delete failed"
         );
 
       }
+
     };
+
 
   // =========================
   // CLEAR ALL
   // =========================
 
-  const clearAll = async () => {
+  const clearAll =
+    async () => {
 
-    try {
+      try {
 
-      await API.delete(
-        "/notifications/clear"
-      );
+        await API.delete(
+          "/notifications/clear"
+        );
 
-      setNotifications([]);
+        setNotifications([]);
 
-      toast.success(
-        "All notifications cleared"
-      );
+        toast.success(
+          "All notifications cleared"
+        );
 
-    } catch (error) {
+      } catch (error) {
 
-      toast.error(
-        "Failed to clear"
-      );
+        console.log(error);
 
-    }
-  };
+        toast.error(
+          "Failed to clear notifications"
+        );
+
+      }
+
+    };
+
 
   // =========================
   // ICONS
@@ -165,30 +192,36 @@ function Notifications() {
     switch (type) {
 
       case "success":
+
         return (
           <FaCheckCircle className="text-green-400 text-2xl" />
         );
 
       case "rejected":
+
         return (
           <FaTimesCircle className="text-red-400 text-2xl" />
         );
 
       case "interview":
+
         return (
           <FaBriefcase className="text-yellow-400 text-2xl" />
         );
 
       default:
+
         return (
-          <FaBriefcase className="text-cyan-400 text-2xl" />
+          <FaBell className="text-cyan-400 text-2xl" />
         );
 
     }
 
   };
 
+
   return (
+
     <div className="min-h-screen bg-[#050816] text-white px-6 py-28">
 
       {/* HEADER */}
@@ -232,13 +265,14 @@ function Notifications() {
 
       </div>
 
+
       {/* LOADING */}
 
       {loading ? (
 
-        <div className="text-center text-cyan-400 text-xl py-20">
+        <div className="flex justify-center items-center py-32">
 
-          Loading Notifications...
+          <div className="w-14 h-14 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
 
         </div>
 
@@ -273,36 +307,46 @@ function Notifications() {
 
                 <motion.div
                   key={notification._id}
+
                   initial={{
                     opacity: 0,
                     y: 20,
                   }}
+
                   animate={{
                     opacity: 1,
                     y: 0,
                   }}
+
                   exit={{
                     opacity: 0,
+                    scale: 0.9,
                   }}
+
                   transition={{
-                    delay: index * 0.1,
+                    delay: index * 0.05,
                   }}
-                  className={`relative bg-white/5 border rounded-3xl p-6 backdrop-blur-xl transition-all duration-300 ${
-                    notification.read
+
+                  className={`relative bg-white/5 border rounded-3xl p-6 backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/40 ${
+                    notification.isRead
                       ? "border-white/10"
                       : "border-cyan-400/40"
                   }`}
                 >
 
-                  {!notification.read && (
+                  {/* UNREAD DOT */}
+
+                  {!notification.isRead && (
+
                     <span className="absolute top-5 right-5 w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></span>
+
                   )}
 
                   <div className="flex items-start gap-5">
 
                     {/* ICON */}
 
-                    <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
 
                       {getIcon(
                         notification.type
@@ -310,17 +354,16 @@ function Notifications() {
 
                     </div>
 
+
                     {/* CONTENT */}
 
                     <div className="flex-1">
 
-                      <div className="flex items-center justify-between gap-5">
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
 
                         <h2 className="text-xl font-bold">
 
-                          {
-                            notification.title
-                          }
+                          {notification.title}
 
                         </h2>
 
@@ -334,19 +377,18 @@ function Notifications() {
 
                       </div>
 
-                      <p className="text-gray-400 mt-2 leading-relaxed">
+                      <p className="text-gray-400 mt-3 leading-relaxed">
 
-                        {
-                          notification.message
-                        }
+                        {notification.message}
 
                       </p>
 
+
                       {/* ACTIONS */}
 
-                      <div className="flex items-center gap-4 mt-5">
+                      <div className="flex items-center gap-4 mt-6">
 
-                        {!notification.read && (
+                        {!notification.isRead && (
 
                           <button
                             onClick={() =>
@@ -354,7 +396,7 @@ function Notifications() {
                                 notification._id
                               )
                             }
-                            className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium"
+                            className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium hover:scale-105 transition"
                           >
 
                             Mark as Read
@@ -383,16 +425,20 @@ function Notifications() {
                   </div>
 
                 </motion.div>
+
               )
             )}
 
           </AnimatePresence>
 
         </div>
+
       )}
 
     </div>
+
   );
+
 }
 
 export default Notifications;

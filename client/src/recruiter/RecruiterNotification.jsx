@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   FaBell,
@@ -9,13 +9,14 @@ import {
   FaUserTie,
   FaSearch,
   FaTrash,
+  FaEnvelopeOpenText,
 } from "react-icons/fa";
-
-import API from "../utils/api";
 
 import toast from "react-hot-toast";
 
 import moment from "moment";
+
+import API from "../utils/api";
 
 function RecruiterNotifications() {
 
@@ -43,14 +44,20 @@ function RecruiterNotifications() {
 
       try {
 
+        setLoading(true);
+
         const { data } =
           await API.get(
             "/notifications/my"
           );
 
-        setNotifications(data);
+        setNotifications(
+          data.notifications || data
+        );
 
       } catch (error) {
+
+        console.log(error);
 
         toast.error(
           "Failed to load notifications"
@@ -61,20 +68,40 @@ function RecruiterNotifications() {
         setLoading(false);
 
       }
+
     };
 
   // =========================
-  // FILTER
+  // FILTER NOTIFICATIONS
   // =========================
 
   const filteredNotifications =
-    notifications.filter((item) =>
-      item.title
-        .toLowerCase()
-        .includes(
-          search.toLowerCase()
-        )
-    );
+    useMemo(() => {
+
+      return notifications.filter(
+        (item) => {
+
+          const title =
+            item.title?.toLowerCase() || "";
+
+          const message =
+            item.message?.toLowerCase() || "";
+
+          const keyword =
+            search.toLowerCase();
+
+          return (
+            title.includes(keyword) ||
+            message.includes(keyword)
+          );
+
+        }
+      );
+
+    }, [
+      notifications,
+      search,
+    ]);
 
   // =========================
   // MARK AS READ
@@ -107,11 +134,14 @@ function RecruiterNotifications() {
 
     } catch (error) {
 
+      console.log(error);
+
       toast.error(
-        "Failed to update"
+        "Failed to mark as read"
       );
 
     }
+
   };
 
   // =========================
@@ -140,11 +170,14 @@ function RecruiterNotifications() {
 
       } catch (error) {
 
+        console.log(error);
+
         toast.error(
           "Delete failed"
         );
 
       }
+
     };
 
   // =========================
@@ -167,6 +200,8 @@ function RecruiterNotifications() {
 
     } catch (error) {
 
+      console.log(error);
+
       toast.error(
         "Failed to clear notifications"
       );
@@ -184,39 +219,61 @@ function RecruiterNotifications() {
     switch (type) {
 
       case "applicant":
+
         return (
           <FaUserTie className="text-cyan-400 text-2xl" />
         );
 
       case "job":
+
         return (
           <FaBriefcase className="text-green-400 text-2xl" />
         );
 
       case "success":
+
         return (
           <FaCheckCircle className="text-green-400 text-2xl" />
         );
 
-      default:
+      case "interview":
+
         return (
-          <FaBell className="text-yellow-400 text-2xl" />
+          <FaEnvelopeOpenText className="text-yellow-400 text-2xl" />
+        );
+
+      default:
+
+        return (
+          <FaBell className="text-blue-400 text-2xl" />
         );
 
     }
 
   };
 
+  // =========================
+  // UNREAD COUNT
+  // =========================
+
+  const unreadCount =
+    notifications.filter(
+      (item) => !item.read
+    ).length;
+
   return (
-    <div className="min-h-screen bg-[#050816] text-white px-6 py-28">
+
+    <div className="min-h-screen bg-[#050816] text-white px-4 sm:px-6 py-28">
 
       {/* HEADER */}
 
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-10">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 mb-10">
+
+        {/* LEFT */}
 
         <div>
 
-          <h1 className="text-4xl font-extrabold flex items-center gap-4">
+          <div className="flex items-center gap-5">
 
             <div className="w-16 h-16 rounded-3xl bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center shadow-2xl">
 
@@ -224,25 +281,56 @@ function RecruiterNotifications() {
 
             </div>
 
-            Notifications
+            <div>
 
-          </h1>
+              <h1 className="text-4xl font-extrabold">
 
-          <p className="text-gray-400 mt-2">
+                Recruiter Notifications
 
-            Stay updated with recruiter activities
+              </h1>
 
-          </p>
+              <p className="text-gray-400 mt-1">
+
+                Stay updated with applications,
+                interviews and hiring activities
+
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* STATS */}
+
+          <div className="flex items-center gap-4 mt-5">
+
+            <div className="px-5 py-2 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-semibold">
+
+              Total:
+              {" "}
+              {notifications.length}
+
+            </div>
+
+            <div className="px-5 py-2 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 font-semibold">
+
+              Unread:
+              {" "}
+              {unreadCount}
+
+            </div>
+
+          </div>
 
         </div>
 
-        {/* RIGHT SIDE */}
+        {/* RIGHT */}
 
-        <div className="flex flex-col lg:flex-row items-center gap-4 w-full lg:w-auto">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
 
           {/* SEARCH */}
 
-          <div className="flex items-center gap-3 bg-white/10 border border-white/10 px-5 py-3 rounded-2xl w-full lg:w-[350px]">
+          <div className="flex items-center gap-3 bg-white/10 border border-white/10 px-5 py-3 rounded-2xl w-full sm:w-[350px]">
 
             <FaSearch className="text-cyan-400" />
 
@@ -251,7 +339,9 @@ function RecruiterNotifications() {
               placeholder="Search notifications..."
               value={search}
               onChange={(e) =>
-                setSearch(e.target.value)
+                setSearch(
+                  e.target.value
+                )
               }
               className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
             />
@@ -264,7 +354,7 @@ function RecruiterNotifications() {
 
             <button
               onClick={clearAll}
-              className="px-6 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-semibold hover:bg-red-500/20 transition"
+              className="px-6 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-semibold hover:bg-red-500/20 transition-all duration-300"
             >
 
               Clear All
@@ -281,15 +371,25 @@ function RecruiterNotifications() {
 
       {loading ? (
 
-        <div className="text-center text-cyan-400 text-xl py-20">
+        <div className="flex justify-center items-center py-32">
 
-          Loading Notifications...
+          <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
 
         </div>
 
       ) : filteredNotifications.length === 0 ? (
 
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-20 text-center">
+        <motion.div
+          initial={{
+            opacity: 0,
+            scale: 0.95,
+          }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+          }}
+          className="bg-white/5 border border-white/10 rounded-3xl p-20 text-center backdrop-blur-xl"
+        >
 
           <FaBell className="text-7xl text-cyan-400 mx-auto mb-6" />
 
@@ -305,133 +405,150 @@ function RecruiterNotifications() {
 
           </p>
 
-        </div>
+        </motion.div>
 
       ) : (
 
         <div className="grid gap-5">
 
-          {filteredNotifications.map(
-            (notification, index) => (
+          <AnimatePresence>
 
-              <motion.div
-                key={notification._id}
-                initial={{
-                  opacity: 0,
-                  y: 20,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  delay: index * 0.1,
-                }}
-                whileHover={{
-                  scale: 1.01,
-                }}
-                className={`relative bg-white/5 border rounded-3xl p-6 backdrop-blur-xl transition-all duration-300 ${
-                  notification.read
-                    ? "border-white/10"
-                    : "border-cyan-400/40"
-                }`}
-              >
+            {filteredNotifications.map(
+              (
+                notification,
+                index
+              ) => (
 
-                {!notification.read && (
+                <motion.div
+                  key={
+                    notification._id
+                  }
+                  initial={{
+                    opacity: 0,
+                    y: 20,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -10,
+                  }}
+                  transition={{
+                    delay:
+                      index * 0.05,
+                  }}
+                  whileHover={{
+                    scale: 1.01,
+                  }}
+                  className={`relative bg-white/5 border rounded-3xl p-6 backdrop-blur-xl transition-all duration-300 shadow-xl ${
+                    notification.read
+                      ? "border-white/10"
+                      : "border-cyan-400/40 shadow-cyan-500/10"
+                  }`}
+                >
 
-                  <span className="absolute top-5 right-5 w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></span>
+                  {/* UNREAD DOT */}
 
-                )}
+                  {!notification.read && (
 
-                <div className="flex items-start gap-5">
+                    <span className="absolute top-5 right-5 w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></span>
 
-                  {/* ICON */}
+                  )}
 
-                  <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
+                  <div className="flex items-start gap-5">
 
-                    {getIcon(
-                      notification.type
-                    )}
+                    {/* ICON */}
 
-                  </div>
+                    <div className="min-w-[60px] w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
 
-                  {/* CONTENT */}
-
-                  <div className="flex-1">
-
-                    <div className="flex items-center justify-between gap-5">
-
-                      <h2 className="text-xl font-bold">
-
-                        {
-                          notification.title
-                        }
-
-                      </h2>
-
-                      <span className="text-sm text-gray-500 whitespace-nowrap">
-
-                        {moment(
-                          notification.createdAt
-                        ).fromNow()}
-
-                      </span>
+                      {getIcon(
+                        notification.type
+                      )}
 
                     </div>
 
-                    <p className="text-gray-400 mt-2 leading-relaxed">
+                    {/* CONTENT */}
 
-                      {
-                        notification.message
-                      }
+                    <div className="flex-1">
 
-                    </p>
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
 
-                    {/* ACTIONS */}
+                        <h2 className="text-xl font-bold break-words">
 
-                    <div className="flex items-center gap-4 mt-5">
+                          {
+                            notification.title
+                          }
 
-                      {!notification.read && (
+                        </h2>
+
+                        <span className="text-sm text-gray-500 whitespace-nowrap">
+
+                          {moment(
+                            notification.createdAt
+                          ).fromNow()}
+
+                        </span>
+
+                      </div>
+
+                      <p className="text-gray-400 mt-3 leading-relaxed">
+
+                        {
+                          notification.message
+                        }
+
+                      </p>
+
+                      {/* ACTIONS */}
+
+                      <div className="flex items-center gap-4 mt-6 flex-wrap">
+
+                        {!notification.read && (
+
+                          <button
+                            onClick={() =>
+                              markAsRead(
+                                notification._id
+                              )
+                            }
+                            className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium hover:scale-105 transition-all duration-300"
+                          >
+
+                            Mark as Read
+
+                          </button>
+
+                        )}
 
                         <button
                           onClick={() =>
-                            markAsRead(
+                            deleteNotification(
                               notification._id
                             )
                           }
-                          className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium"
+                          className="w-11 h-11 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition-all duration-300"
                         >
 
-                          Mark as Read
+                          <FaTrash />
 
                         </button>
 
-                      )}
-
-                      <button
-                        onClick={() =>
-                          deleteNotification(
-                            notification._id
-                          )
-                        }
-                        className="w-11 h-11 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition"
-                      >
-
-                        <FaTrash />
-
-                      </button>
+                      </div>
 
                     </div>
 
                   </div>
 
-                </div>
+                </motion.div>
+              )
+            )}
 
-              </motion.div>
-            )
-          )}
+          </AnimatePresence>
 
         </div>
+
       )}
 
     </div>
