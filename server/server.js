@@ -13,6 +13,7 @@ import candidateRoutes from "./routes/candidateRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import recruiterRoutes from "./routes/recruiterRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -79,6 +80,8 @@ app.use("/api/candidate", candidateRoutes);
 app.use("/api/jobs", jobRoutes );
 app.use("/api/application", applicationRoutes);
 app.use("/api/recruiter", recruiterRoutes);
+app.use("/api/notifications",notificationRoutes);
+
 // ======================
 // 404 HANDLER
 // ======================

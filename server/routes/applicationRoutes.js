@@ -1,38 +1,57 @@
 import express from "express";
 
 import {
-  updateRecruiterProfile,
-  getRecruiterProfile,
-} from "../controllers/recruiterController.js";
+  applyJob,
+  getMyApplications,
+  getApplicants,
+  getSingleApplication,
+  updateApplicationStatus,
+  sendInterviewInvite,
+} from "../controllers/applicationController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 
-import upload from "../middleware/uploadMiddleware.js";
-
 const router = express.Router();
 
-// GET PROFILE
+// APPLY JOB
+router.post(
+  "/apply/:id",
+  protect,
+  applyJob
+);
+
+// MY APPLICATIONS
 router.get(
-  "/profile",
+  "/my-applications",
   protect,
-  getRecruiterProfile
+  getMyApplications
 );
 
-// UPDATE PROFILE
+// GET APPLICANTS
+router.get(
+  "/applicants/:jobId",
+  protect,
+  getApplicants
+);
+
+// SINGLE APPLICATION
+router.get(
+  "/single/:id",
+  protect,
+  getSingleApplication
+);
+
+// UPDATE STATUS
 router.put(
-  "/update-profile",
+  "/status/:id",
   protect,
-  upload.fields([
-    {
-      name: "profileImage",
-      maxCount: 1,
-    },
-    {
-      name: "companyLogo",
-      maxCount: 1,
-    },
-  ]),
-  updateRecruiterProfile
+  updateApplicationStatus
 );
 
+// SEND INTERVIEW INVITE
+router.post(
+  "/interview/:id",
+  protect,
+  sendInterviewInvite
+);
 export default router;

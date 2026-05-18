@@ -139,7 +139,7 @@ function Hero() {
 
               <Link
                 to="/jobs"
-                className="bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 px-7 py-3.5 rounded-2xl font-semibold transition-all duration-300"
+                className="flex items-center bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 px-7 py-3.5 rounded-2xl font-semibold transition-all duration-300"
               >
 
                 Explore Jobs
@@ -151,7 +151,7 @@ function Hero() {
           </div>
 
           {/* SEARCH */}
-          <motion.div
+          {/* <motion.div
             initial={{
               opacity: 0,
               y: 30,
@@ -188,7 +188,7 @@ function Hero() {
 
             </div>
 
-          </motion.div>
+          </motion.div> */}
 
           {/* STATS */}
           <div className="mt-12 grid grid-cols-3 gap-6 max-w-xl">

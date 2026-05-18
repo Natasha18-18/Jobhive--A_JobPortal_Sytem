@@ -44,6 +44,7 @@ function EditProfile() {
     portfolio: "",
     linkedin: "",
     github: "",
+    profileImage:"",
   });
 
   const [profileImage, setProfileImage] =
@@ -83,16 +84,17 @@ function EditProfile() {
 
         const profile = res.data.data;
 
-        setFormData({
-          fullName: profile.fullName || "",
-          email: profile.email || "",
-          phone: profile.phone || "",
-          role: profile.role || "",
-          bio: profile.bio || "",
-          portfolio: profile.portfolio || "",
-          linkedin: profile.linkedin || "",
-          github: profile.github || "",
-        });
+setFormData({
+  fullName: profile.fullName || "",
+  email: profile.email || "",
+  phone: profile.phone || "",
+  role: profile.role || "",
+  bio: profile.bio || "",
+  portfolio: profile.portfolio || "",
+  linkedin: profile.linkedin || "",
+  github: profile.github || "",
+  profileImage: profile.profileImage || "",
+});
 
         setSkills(profile.skills || []);
       }

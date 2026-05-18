@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+import axios from "axios";
+
+import toast from "react-hot-toast";
 
 import {
   useNavigate,
   useParams,
 } from "react-router-dom";
 
-import {
-  motion,
-} from "framer-motion";
+import { motion } from "framer-motion";
 
 import {
   FaUserTie,
@@ -30,52 +32,133 @@ function ApplicantDetails() {
   const { id } = useParams();
 
   // =========================
-  // DUMMY DATA
+  // STATES
   // =========================
 
-  const [applicant] = useState({
-    id,
-    fullName: "Rahul Sharma",
-    email: "rahul@example.com",
-    phone: "+91 9876543210",
-    location: "Delhi, India",
-    education: "B.Tech Computer Science",
-    experience: "2 Years",
-    skills: [
-      "React",
-      "Node.js",
-      "MongoDB",
-      "Express",
-      "Tailwind CSS",
-    ],
-    status: "Pending",
-    appliedDate: "15 May 2026",
-    about:
-      "Passionate MERN Stack Developer with strong frontend & backend skills. Looking for exciting opportunities.",
-    profileImage:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800",
-    resume:
-      "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-  });
+  const [applicant, setApplicant] =
+    useState(null);
 
-  // =========================
-  // STATUS
-  // =========================
+  const [loading, setLoading] =
+    useState(true);
 
   const [status, setStatus] =
-    useState(applicant.status);
+    useState("Pending");
 
-  const handleAccept = () => {
+  // =========================
+  // FETCH APPLICANT
+  // =========================
 
-    setStatus("Accepted");
+  useEffect(() => {
 
-  };
+    const fetchApplicant =
+      async () => {
 
-  const handleReject = () => {
+        try {
 
-    setStatus("Rejected");
+          const token =
+            localStorage.getItem(
+              "token"
+            );
 
-  };
+          const res =
+            await axios.get(
+              `http://localhost:5002/api/application/single/${id}`,
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+          setApplicant(
+            res.data.application
+          );
+
+          setStatus(
+            res.data.application
+              .status
+          );
+
+        } catch (error) {
+
+          console.log(error);
+
+          toast.error(
+            "Failed to load applicant"
+          );
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      };
+
+    fetchApplicant();
+
+  }, [id]);
+
+  // =========================
+  // UPDATE STATUS
+  // =========================
+
+  const updateStatus =
+    async (newStatus) => {
+
+      try {
+
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
+        const res =
+          await axios.put(
+            `http://localhost:5002/api/application/status/${id}`,
+            {
+              status: newStatus,
+            },
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+        toast.success(
+          res.data.message
+        );
+
+        setStatus(newStatus);
+
+      } catch (error) {
+
+        console.log(error);
+
+        toast.error(
+          "Status update failed"
+        );
+
+      }
+
+    };
+
+  // =========================
+  // LOADING
+  // =========================
+
+  if (loading) {
+
+    return (
+      <div className="min-h-screen bg-[#050816] flex items-center justify-center text-white text-3xl font-bold">
+        Loading...
+      </div>
+    );
+
+  }
 
   return (
     <div className="min-h-screen bg-[#050816] text-white px-6 py-32 relative overflow-hidden">
@@ -107,7 +190,7 @@ function ApplicantDetails() {
 
         </motion.button>
 
-        {/* TOP CARD */}
+        {/* CARD */}
         <motion.div
           initial={{
             opacity: 0,
@@ -132,7 +215,10 @@ function ApplicantDetails() {
 
                 <img
                   src={
-                    applicant.profileImage
+                    applicant
+                      ?.applicant
+                      ?.profileImage ||
+                    "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                   }
                   alt="profile"
                   className="w-40 h-40 rounded-full mx-auto object-cover border-4 border-cyan-400 shadow-2xl"
@@ -142,13 +228,17 @@ function ApplicantDetails() {
 
                   <h1 className="text-3xl font-bold">
 
-                    {applicant.fullName}
+                    {
+                      applicant
+                        ?.applicant
+                        ?.fullName
+                    }
 
                   </h1>
 
                   <p className="text-cyan-400 mt-2">
 
-                    MERN Stack Developer
+                    Candidate
 
                   </p>
 
@@ -185,6 +275,7 @@ function ApplicantDetails() {
               {/* INFO GRID */}
               <div className="grid md:grid-cols-2 gap-5">
 
+                {/* EMAIL */}
                 <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
 
                   <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl">
@@ -196,14 +287,16 @@ function ApplicantDetails() {
                   <div>
 
                     <p className="text-gray-400 text-sm">
-
                       Email
-
                     </p>
 
                     <h3 className="font-semibold">
 
-                      {applicant.email}
+                      {
+                        applicant
+                          ?.applicant
+                          ?.email
+                      }
 
                     </h3>
 
@@ -211,6 +304,7 @@ function ApplicantDetails() {
 
                 </div>
 
+                {/* PHONE */}
                 <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
 
                   <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl">
@@ -222,14 +316,17 @@ function ApplicantDetails() {
                   <div>
 
                     <p className="text-gray-400 text-sm">
-
                       Phone
-
                     </p>
 
                     <h3 className="font-semibold">
 
-                      {applicant.phone}
+                      {
+                        applicant
+                          ?.applicant
+                          ?.phone ||
+                        "N/A"
+                      }
 
                     </h3>
 
@@ -237,84 +334,7 @@ function ApplicantDetails() {
 
                 </div>
 
-                <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-xl">
-
-                    <FaMapMarkerAlt />
-
-                  </div>
-
-                  <div>
-
-                    <p className="text-gray-400 text-sm">
-
-                      Location
-
-                    </p>
-
-                    <h3 className="font-semibold">
-
-                      {applicant.location}
-
-                    </h3>
-
-                  </div>
-
-                </div>
-
-                <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-yellow-500/10 text-yellow-400 flex items-center justify-center text-xl">
-
-                    <FaGraduationCap />
-
-                  </div>
-
-                  <div>
-
-                    <p className="text-gray-400 text-sm">
-
-                      Education
-
-                    </p>
-
-                    <h3 className="font-semibold">
-
-                      {applicant.education}
-
-                    </h3>
-
-                  </div>
-
-                </div>
-
-                <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-green-500/10 text-green-400 flex items-center justify-center text-xl">
-
-                    <FaBriefcase />
-
-                  </div>
-
-                  <div>
-
-                    <p className="text-gray-400 text-sm">
-
-                      Experience
-
-                    </p>
-
-                    <h3 className="font-semibold">
-
-                      {applicant.experience}
-
-                    </h3>
-
-                  </div>
-
-                </div>
-
+                {/* APPLIED DATE */}
                 <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
 
                   <div className="w-14 h-14 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl">
@@ -326,14 +346,43 @@ function ApplicantDetails() {
                   <div>
 
                     <p className="text-gray-400 text-sm">
-
                       Applied Date
-
                     </p>
 
                     <h3 className="font-semibold">
 
-                      {applicant.appliedDate}
+                      {new Date(
+                        applicant.createdAt
+                      ).toLocaleDateString()}
+
+                    </h3>
+
+                  </div>
+
+                </div>
+
+                {/* JOB */}
+                <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
+
+                  <div className="w-14 h-14 rounded-2xl bg-green-500/10 text-green-400 flex items-center justify-center text-xl">
+
+                    <FaBriefcase />
+
+                  </div>
+
+                  <div>
+
+                    <p className="text-gray-400 text-sm">
+                      Applied Job
+                    </p>
+
+                    <h3 className="font-semibold">
+
+                      {
+                        applicant
+                          ?.job
+                          ?.title
+                      }
 
                     </h3>
 
@@ -343,98 +392,62 @@ function ApplicantDetails() {
 
               </div>
 
-              {/* ABOUT */}
-              <div className="bg-[#0b1120] rounded-3xl p-6 border border-white/10">
-
-                <h2 className="text-2xl font-bold mb-4">
-
-                  About Candidate
-
-                </h2>
-
-                <p className="text-gray-300 leading-8">
-
-                  {applicant.about}
-
-                </p>
-
-              </div>
-
-              {/* SKILLS */}
-              <div className="bg-[#0b1120] rounded-3xl p-6 border border-white/10">
-
-                <h2 className="text-2xl font-bold mb-5">
-
-                  Skills
-
-                </h2>
-
-                <div className="flex flex-wrap gap-4">
-
-                  {applicant.skills.map(
-                    (
-                      skill,
-                      index
-                    ) => (
-                      <span
-                        key={index}
-                        className="px-5 py-2 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-400/20"
-                      >
-
-                        {skill}
-
-                      </span>
-                    )
-                  )}
-
-                </div>
-
-              </div>
-
               {/* ACTIONS */}
               <div className="flex flex-wrap gap-5">
 
-                <motion.a
-                  whileHover={{
-                    scale: 1.05,
-                  }}
-                  whileTap={{
-                    scale: 0.95,
-                  }}
-                  href={
-                    applicant.resume
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-7 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 font-semibold flex items-center gap-3 shadow-xl"
-                >
+                {/* RESUME */}
+                {applicant
+                  ?.applicant
+                  ?.resume && (
+                  <>
+                    <motion.a
+                      whileHover={{
+                        scale: 1.05,
+                      }}
+                      whileTap={{
+                        scale: 0.95,
+                      }}
+                      href={
+                        applicant
+                          ?.applicant
+                          ?.resume
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-7 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 font-semibold flex items-center gap-3 shadow-xl"
+                    >
 
-                  <FaFilePdf />
+                      <FaFilePdf />
 
-                  View Resume
+                      View Resume
 
-                </motion.a>
+                    </motion.a>
 
-                <motion.a
-                  whileHover={{
-                    scale: 1.05,
-                  }}
-                  whileTap={{
-                    scale: 0.95,
-                  }}
-                  href={
-                    applicant.resume
-                  }
-                  download
-                  className="px-7 py-4 rounded-2xl bg-white/10 border border-white/10 font-semibold flex items-center gap-3 hover:border-cyan-400/40 transition"
-                >
+                    <motion.a
+                      whileHover={{
+                        scale: 1.05,
+                      }}
+                      whileTap={{
+                        scale: 0.95,
+                      }}
+                      href={
+                        applicant
+                          ?.applicant
+                          ?.resume
+                      }
+                      download
+                      className="px-7 py-4 rounded-2xl bg-white/10 border border-white/10 font-semibold flex items-center gap-3 hover:border-cyan-400/40 transition"
+                    >
 
-                  <FaDownload />
+                      <FaDownload />
 
-                  Download CV
+                      Download CV
 
-                </motion.a>
+                    </motion.a>
+                  </>
+                )}
 
+                {/* ACCEPT */}
                 <motion.button
                   whileHover={{
                     scale: 1.05,
@@ -442,8 +455,10 @@ function ApplicantDetails() {
                   whileTap={{
                     scale: 0.95,
                   }}
-                  onClick={
-                    handleAccept
+                  onClick={() =>
+                    updateStatus(
+                      "Accepted"
+                    )
                   }
                   className="px-7 py-4 rounded-2xl bg-green-500 text-white font-semibold flex items-center gap-3 shadow-xl"
                 >
@@ -454,6 +469,7 @@ function ApplicantDetails() {
 
                 </motion.button>
 
+                {/* REJECT */}
                 <motion.button
                   whileHover={{
                     scale: 1.05,
@@ -461,8 +477,10 @@ function ApplicantDetails() {
                   whileTap={{
                     scale: 0.95,
                   }}
-                  onClick={
-                    handleReject
+                  onClick={() =>
+                    updateStatus(
+                      "Rejected"
+                    )
                   }
                   className="px-7 py-4 rounded-2xl bg-red-500 text-white font-semibold flex items-center gap-3 shadow-xl"
                 >

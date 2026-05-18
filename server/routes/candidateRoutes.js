@@ -135,21 +135,36 @@ router.post(
 
         await existingCandidate.save();
 
-        await User.findByIdAndUpdate(
-  req.body.userId,
-  {
-    fullName: req.body.fullName,
-    email: req.body.email,
-    phone: req.body.phone,
-  }
-);
+const updatedUser =
+  await User.findByIdAndUpdate(
+    req.body.userId,
+    {
+      fullName: req.body.fullName,
+      email: req.body.email,
+      phone: req.body.phone,
+
+      profileImage:
+        req.files?.profileImage
+          ? req.files
+              .profileImage[0]
+              .filename
+          : existingCandidate.profileImage,
+    },
+    {
+      new: true,
+    }
+  );
 
         return res.status(200).json({
-          success: true,
-          message:
-            "Profile Updated",
-          data: existingCandidate,
-        });
+  success: true,
+  message:
+    "Profile Updated",
+  data: {
+    ...existingCandidate._doc,
+    profileImage:
+      existingCandidate.profileImage,
+  },
+});
 
       }
 

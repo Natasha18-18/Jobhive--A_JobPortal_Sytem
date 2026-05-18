@@ -21,7 +21,6 @@ import {
   FaSignOutAlt,
   FaUserEdit,
   FaPlusCircle,
-  FaClipboardList,
   FaHome,
   FaUserTie,
   FaEnvelope,
@@ -47,6 +46,9 @@ function Navbar() {
   const [loading, setLoading] =
     useState(false);
 
+  const [notifications, setNotifications] =
+    useState([]);
+
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("user"))
   );
@@ -66,21 +68,78 @@ function Navbar() {
   // LOAD USER
   // =========================
 
-  useEffect(() => {
+useEffect(() => {
 
-    const storedUser = JSON.parse(
+  const storedUser = JSON.parse(
+    localStorage.getItem("user")
+  );
+
+  setUser(storedUser);
+
+  setProfileData(storedUser);
+
+  if (storedUser) {
+    fetchNotifications();
+  }
+
+  const updateNavbarProfile = () => {
+
+    const updatedUser = JSON.parse(
       localStorage.getItem("user")
     );
 
-    setUser(storedUser);
+    setUser(updatedUser);
 
-    // =========================
-    // NO API CALL
-    // =========================
+    setProfileData(updatedUser);
+  };
 
-    setProfileData(storedUser);
+  window.addEventListener(
+    "profileUpdated",
+    updateNavbarProfile
+  );
 
-  }, [location.pathname]);
+  return () => {
+    window.removeEventListener(
+      "profileUpdated",
+      updateNavbarProfile
+    );
+  };
+
+}, [location.pathname]);
+
+  // =========================
+  // FETCH NOTIFICATIONS
+  // =========================
+
+  const fetchNotifications = async () => {
+
+    try {
+
+      const token =
+        localStorage.getItem("token");
+
+      if (!token) return;
+
+      const { data } =
+        await axios.get(
+          "http://localhost:5002/api/notifications/my",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+      setNotifications(data);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
 
   // =========================
   // LOGOUT
@@ -96,7 +155,7 @@ function Navbar() {
 
     setProfileData(null);
 
-    navigate("/login");
+    navigate("/");
 
   };
 
@@ -104,33 +163,46 @@ function Navbar() {
   // NAV LINKS
   // =========================
 
-  const candidateLinks = [
-    {
-      name: "Home",
-      path: "/",
-    },
+const candidateLinks = user
+  ? [
+      {
+        name: "Jobs",
+        path: "/jobs",
+        icon: <FaBriefcase />,
+      },
 
-    {
-      name: "About",
-      path: "/about",
-    },
+      {
+        name: "Companies",
+        path: "/companies",
+      },
 
-    {
-      name: "Jobs",
-      path: "/jobs",
-    },
+      {
+        name: "About",
+        path: "/about",
+      },
 
-    {
-      name: "Companies",
-      path: "/companies",
-    },
+      {
+        name: "Contact",
+        path: "/contact",
+      },
+    ]
+  : [
+      {
+        name: "Home",
+        path: "/",
+        icon: <FaHome />,
+      },
 
-    {
-      name: "Contact",
-      path: "/contact",
-    },
-  ];
+      {
+        name: "About",
+        path: "/about",
+      },
 
+      {
+        name: "Contact",
+        path: "/contact",
+      },
+    ];
   const recruiterLinks = [
     {
       name: "Dashboard",
@@ -149,12 +221,6 @@ function Navbar() {
       path: "/recruiter/my-jobs",
       icon: <FaBriefcase />,
     },
-
-    // {
-    //   name: "Applicants",
-    //   path: "/recruiter/applicants",
-    //   icon: <FaClipboardList />,
-    // },
   ];
 
   const navLinks = isRecruiter
@@ -185,8 +251,10 @@ function Navbar() {
         {/* LOGO */}
         <Link
           to={
-            isRecruiter
-              ? "/recruiter/dashboard"
+            user
+              ? isRecruiter
+                ? "/recruiter/dashboard"
+                : "/jobs"
               : "/"
           }
           className="flex items-center gap-3"
@@ -235,47 +303,49 @@ function Navbar() {
         </Link>
 
         {/* DESKTOP MENU */}
-        <div className="hidden lg:flex items-center gap-2 bg-white/10 backdrop-blur-2xl px-3 py-3 rounded-full border border-white/10 shadow-xl">
+        {user && (
+          <div className="hidden lg:flex items-center gap-2 bg-white/10 backdrop-blur-2xl px-3 py-3 rounded-full border border-white/10 shadow-xl">
 
-          {navLinks.map(
-            (link, index) => (
-              <Link
-                key={index}
-                to={link.path}
-                className={`relative px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-                  location.pathname ===
-                  link.path
-                    ? "text-white"
-                    : "text-gray-300 hover:text-cyan-400"
-                }`}
-              >
+            {navLinks.map(
+              (link, index) => (
+                <Link
+                  key={index}
+                  to={link.path}
+                  className={`relative px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                    location.pathname ===
+                    link.path
+                      ? "text-white"
+                      : "text-gray-300 hover:text-cyan-400"
+                  }`}
+                >
 
-                {location.pathname ===
-                  link.path && (
-                  <motion.div
-                    layoutId="active-pill"
-                    className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full"
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 25,
-                    }}
-                  />
-                )}
+                  {location.pathname ===
+                    link.path && (
+                    <motion.div
+                      layoutId="active-pill"
+                      className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full"
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 25,
+                      }}
+                    />
+                  )}
 
-                <span className="relative z-10 flex items-center gap-2">
+                  <span className="relative z-10 flex items-center gap-2">
 
-                  {link.icon}
+                    {link.icon}
 
-                  {link.name}
+                    {link.name}
 
-                </span>
+                  </span>
 
-              </Link>
-            )
-          )}
+                </Link>
+              )
+            )}
 
-        </div>
+          </div>
+        )}
 
         {/* RIGHT SIDE */}
         <div className="hidden lg:flex items-center gap-4">
@@ -310,7 +380,9 @@ function Navbar() {
 
                   <FaBell className="text-lg" />
 
-                  <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                  {notifications.length > 0 && (
+                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                  )}
 
                 </motion.button>
 
@@ -337,8 +409,6 @@ function Navbar() {
 
                   <FaEnvelope className="text-lg" />
 
-                  <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-green-500 rounded-full"></span>
-
                 </motion.button>
 
               </Link>
@@ -363,7 +433,7 @@ function Navbar() {
 
                   {profileData?.profileImage ? (
                     <img
-                      src={`http://localhost:5002/uploads/${profileData.profileImage}`}
+                      src={`http://localhost:5002/uploads/${profileData.profileImage}?${Date.now()}`}
                       alt="profile"
                       className="w-12 h-12 rounded-full object-cover border-2 border-cyan-400 shadow-lg"
                     />
@@ -415,7 +485,6 @@ function Navbar() {
                       className="absolute right-0 mt-5 w-80 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden"
                     >
 
-                      {/* TOP */}
                       <div className="relative p-6 border-b border-white/10">
 
                         <button
@@ -435,7 +504,7 @@ function Navbar() {
 
                           {profileData?.profileImage ? (
                             <img
-                              src={`http://localhost:5002/uploads/${profileData.profileImage}`}
+                              src={`http://localhost:5002/uploads/${profileData.profileImage}?${Date.now()}`}
                               alt="profile"
                               className="w-16 h-16 rounded-2xl object-cover border-2 border-cyan-400"
                             />
@@ -602,7 +671,7 @@ function Navbar() {
 
             <div className="flex flex-col p-6 gap-3">
 
-              {navLinks.map(
+              {user && navLinks.map(
                 (link, index) => (
                   <Link
                     key={index}
@@ -630,7 +699,7 @@ function Navbar() {
                 )
               )}
 
-              {user && (
+              {user ? (
                 <>
                   <Link
                     to={
@@ -656,6 +725,18 @@ function Navbar() {
 
                   </button>
                 </>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() =>
+                    setMenuOpen(false)
+                  }
+                  className="px-5 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold text-center"
+                >
+
+                  Login
+
+                </Link>
               )}
 
             </div>

@@ -23,7 +23,23 @@ export const sendOTP = async (req, res) => {
       otp,
     });
 
-    await sendEmail(email, otp);
+    await sendEmail({
+  to: email,
+
+  subject: "Job Portal OTP Verification",
+
+  html: `
+    <div style="font-family:sans-serif;">
+      <h2>Your OTP Code</h2>
+
+      <h1>${otp}</h1>
+
+      <p>
+        This OTP expires in 5 minutes.
+      </p>
+    </div>
+  `,
+});
 
     res.status(200).json({
       success: true,
@@ -229,7 +245,23 @@ export const sendLoginOTP = async (req, res) => {
       otp,
     });
 
-    await sendEmail(email, otp);
+    await sendEmail({
+  to: email,
+
+  subject: "Job Portal OTP Verification",
+
+  html: `
+    <div style="font-family:sans-serif;">
+      <h2>Your OTP Code</h2>
+
+      <h1>${otp}</h1>
+
+      <p>
+        This OTP expires in 5 minutes.
+      </p>
+    </div>
+  `,
+});
 
     res.status(200).json({
       success: true,
@@ -358,7 +390,23 @@ export const sendForgotOTP = async (req, res) => {
     });
 
     // SEND EMAIL
-    await sendEmail(email, otp);
+    await sendEmail({
+  to: email,
+
+  subject: "Job Portal OTP Verification",
+
+  html: `
+    <div style="font-family:sans-serif;">
+      <h2>Your OTP Code</h2>
+
+      <h1>${otp}</h1>
+
+      <p>
+        This OTP expires in 5 minutes.
+      </p>
+    </div>
+  `,
+});
 
     res.status(200).json({
       success: true,
@@ -376,6 +424,8 @@ export const sendForgotOTP = async (req, res) => {
 
   }
 };
+
+
 
 
 ///////////////////////////////////////////////////////////

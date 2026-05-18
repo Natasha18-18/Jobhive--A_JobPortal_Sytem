@@ -1,5 +1,10 @@
 import Application from "../models/Application.js";
 import Job from "../models/jobModel.js";
+import Notification from "../models/notificationModel.js";
+import User from "../models/User.js";
+import createNotification from "../utils/createNotification.js";
+import sendEmail from "../utils/sendEmail.js";
+
 
 // ==========================
 // APPLY JOB
@@ -18,10 +23,7 @@ export const applyJob = async (
     const userId =
       req.user._id;
 
-    // ==========================
     // FIND JOB
-    // ==========================
-
     const job =
       await Job.findById(jobId);
 
@@ -34,10 +36,7 @@ export const applyJob = async (
 
     }
 
-    // ==========================
     // RECRUITER CANNOT APPLY
-    // ==========================
-
     if (
       req.user.role ===
       "recruiter"
@@ -51,10 +50,7 @@ export const applyJob = async (
 
     }
 
-    // ==========================
-    // CHECK ALREADY APPLIED
-    // ==========================
-
+    // ALREADY APPLIED
     const alreadyApplied =
       await Application.findOne({
         job: jobId,
@@ -71,23 +67,20 @@ export const applyJob = async (
 
     }
 
-    // ==========================
     // CREATE APPLICATION
-    // ==========================
-
     const application =
       await Application.create({
         applicant: userId,
+
         recruiter:
           job.recruiter,
+
         job: jobId,
+
         status: "Pending",
       });
 
-    // ==========================
-    // PUSH APPLICANT INTO JOB
-    // ==========================
-
+    // PUSH APPLICANT
     if (
       !job.applicants.includes(
         userId
@@ -103,13 +96,69 @@ export const applyJob = async (
     await job.save();
 
     // ==========================
-    // RESPONSE
+    // CREATE RECRUITER NOTIFICATION
     // ==========================
+
+    await Notification.create({
+      user: job.recruiter,
+
+      title:
+        "New Job Application",
+
+      message:
+        `${req.user.fullName} applied for ${job.title}`,
+
+      type: "applicant",
+    });
+
+    // ==========================
+    // SEND EMAIL TO RECRUITER
+    // ==========================
+
+    const recruiter =
+      await User.findById(
+        job.recruiter
+      );
+
+    if (recruiter) {
+
+      await sendEmail({
+        to: recruiter.email,
+
+        subject:
+          "New Job Application Received",
+
+        html: `
+          <div style="font-family:sans-serif;">
+
+            <h2>
+              New Applicant Applied
+            </h2>
+
+            <p>
+              <b>
+                ${req.user.fullName}
+              </b>
+
+              applied for your job:
+
+              <b>
+                ${job.title}
+              </b>
+            </p>
+
+          </div>
+        `,
+      });
+
+    }
 
     res.status(201).json({
       success: true,
+
       message:
         "Application submitted successfully",
+
       application,
     });
 
@@ -119,6 +168,7 @@ export const applyJob = async (
 
     res.status(500).json({
       success: false,
+
       message:
         error.message,
     });
@@ -126,6 +176,7 @@ export const applyJob = async (
   }
 
 };
+
 
 // ==========================
 // GET MY APPLICATIONS
@@ -151,6 +202,7 @@ export const getMyApplications =
 
       res.status(200).json({
         success: true,
+
         applications,
       });
 
@@ -160,6 +212,7 @@ export const getMyApplications =
 
       res.status(500).json({
         success: false,
+
         message:
           error.message,
       });
@@ -167,6 +220,7 @@ export const getMyApplications =
     }
 
   };
+
 
 // ==========================
 // GET JOB APPLICANTS
@@ -178,12 +232,9 @@ export const getApplicants =
     try {
 
       const jobId =
-        req.params.id;
+        req.params.jobId;
 
-      // ==========================
       // FIND JOB
-      // ==========================
-
       const job =
         await Job.findById(
           jobId
@@ -193,16 +244,14 @@ export const getApplicants =
 
         return res.status(404).json({
           success: false,
+
           message:
             "Job not found",
         });
 
       }
 
-      // ==========================
-      // ONLY OWNER CAN VIEW
-      // ==========================
-
+      // ONLY OWNER
       if (
         job.recruiter.toString() !==
         req.user._id.toString()
@@ -210,23 +259,25 @@ export const getApplicants =
 
         return res.status(403).json({
           success: false,
+
           message:
             "Access denied",
         });
 
       }
 
-      // ==========================
       // GET APPLICATIONS
-      // ==========================
-
       const applications =
         await Application.find({
           job: jobId,
         })
           .populate(
             "applicant",
-            "fullName email phone"
+            "fullName email phone profileImage resume"
+          )
+          .populate(
+            "job",
+            "title"
           )
           .sort({
             createdAt: -1,
@@ -234,6 +285,7 @@ export const getApplicants =
 
       res.status(200).json({
         success: true,
+
         applications,
       });
 
@@ -243,6 +295,7 @@ export const getApplicants =
 
       res.status(500).json({
         success: false,
+
         message:
           error.message,
       });
@@ -250,6 +303,60 @@ export const getApplicants =
     }
 
   };
+
+
+// ==========================
+// GET SINGLE APPLICATION
+// ==========================
+
+export const getSingleApplication =
+  async (req, res) => {
+
+    try {
+
+      const application =
+        await Application.findById(
+          req.params.id
+        )
+          .populate(
+            "applicant"
+          )
+          .populate(
+            "job"
+          );
+
+      if (!application) {
+
+        return res.status(404).json({
+          success: false,
+
+          message:
+            "Application not found",
+        });
+
+      }
+
+      res.status(200).json({
+        success: true,
+
+        application,
+      });
+
+    } catch (error) {
+
+      console.log(error);
+
+      res.status(500).json({
+        success: false,
+
+        message:
+          error.message,
+      });
+
+    }
+
+  };
+
 
 // ==========================
 // UPDATE APPLICATION STATUS
@@ -263,10 +370,7 @@ export const updateApplicationStatus =
       const { status } =
         req.body;
 
-      // ==========================
-      // VALIDATION
-      // ==========================
-
+      // VALID STATUS
       if (
         ![
           "Pending",
@@ -277,54 +381,54 @@ export const updateApplicationStatus =
 
         return res.status(400).json({
           success: false,
+
           message:
             "Invalid status",
         });
 
       }
 
-      // ==========================
       // FIND APPLICATION
-      // ==========================
-
       const application =
         await Application.findById(
           req.params.id
-        );
+        )
+          .populate(
+            "applicant"
+          )
+          .populate(
+            "job"
+          );
 
       if (!application) {
 
         return res.status(404).json({
           success: false,
+
           message:
             "Application not found",
         });
 
       }
 
-      // ==========================
       // FIND JOB
-      // ==========================
-
       const job =
         await Job.findById(
-          application.job
+          application.job._id
         );
 
       if (!job) {
 
         return res.status(404).json({
           success: false,
+
           message:
             "Job not found",
         });
 
       }
 
-      // ==========================
-      // ONLY RECRUITER
-      // ==========================
-
+      // CHECK OWNER
       if (
         job.recruiter.toString() !==
         req.user._id.toString()
@@ -332,29 +436,94 @@ export const updateApplicationStatus =
 
         return res.status(403).json({
           success: false,
+
           message:
             "Access denied",
         });
 
       }
 
-      // ==========================
       // UPDATE STATUS
-      // ==========================
-
       application.status =
         status;
 
       await application.save();
 
       // ==========================
-      // RESPONSE
+      // CREATE CANDIDATE NOTIFICATION
       // ==========================
+
+      await Notification.create({
+        user:
+          application.applicant._id,
+
+        title:
+          `Application ${status}`,
+
+        message:
+          status === "Accepted"
+            ? `Congratulations! Your application for ${job.title} has been accepted`
+            : `Your application for ${job.title} has been rejected`,
+
+        type:
+          status === "Accepted"
+            ? "success"
+            : "rejected",
+      });
+
+      // ==========================
+      // SEND EMAIL TO CANDIDATE
+      // ==========================
+
+      await sendEmail({
+        to:
+          application.applicant.email,
+
+        subject:
+          status === "Accepted"
+            ? "Application Accepted"
+            : "Application Rejected",
+
+        html:
+          status === "Accepted"
+            ? `
+              <div style="font-family:sans-serif;">
+
+                <h2>
+                  Congratulations 🎉
+                </h2>
+
+                <p>
+                  Your application for
+                  <b>${job.title}</b>
+                  has been accepted.
+                </p>
+
+              </div>
+            `
+            : `
+              <div style="font-family:sans-serif;">
+
+                <h2>
+                  Application Update
+                </h2>
+
+                <p>
+                  Your application for
+                  <b>${job.title}</b>
+                  has been rejected.
+                </p>
+
+              </div>
+            `,
+      });
 
       res.status(200).json({
         success: true,
+
         message:
           `Application ${status}`,
+
         application,
       });
 
@@ -364,6 +533,7 @@ export const updateApplicationStatus =
 
       res.status(500).json({
         success: false,
+
         message:
           error.message,
       });
@@ -371,6 +541,7 @@ export const updateApplicationStatus =
     }
 
   };
+
 
 // ==========================
 // DELETE APPLICATION
@@ -390,6 +561,7 @@ export const deleteApplication =
 
         return res.status(404).json({
           success: false,
+
           message:
             "Application not found",
         });
@@ -400,6 +572,7 @@ export const deleteApplication =
 
       res.status(200).json({
         success: true,
+
         message:
           "Application deleted",
       });
@@ -410,6 +583,109 @@ export const deleteApplication =
 
       res.status(500).json({
         success: false,
+
+        message:
+          error.message,
+      });
+
+    }
+
+  };
+
+
+// ==========================
+// SEND INTERVIEW INVITE
+// ==========================
+
+export const sendInterviewInvite =
+  async (req, res) => {
+
+    try {
+
+      const application =
+        await Application.findById(
+          req.params.id
+        )
+          .populate(
+            "applicant"
+          )
+          .populate(
+            "job"
+          );
+
+      if (!application) {
+
+        return res.status(404).json({
+          success: false,
+
+          message:
+            "Application not found",
+        });
+
+      }
+
+      // CREATE NOTIFICATION
+
+      await Notification.create({
+        user:
+          application.applicant._id,
+
+        title:
+          "Interview Invitation",
+
+        message:
+          `You have been invited for an interview for ${application.job.title}`,
+
+        type:
+          "interview",
+      });
+
+      // SEND EMAIL
+
+      await sendEmail({
+        to:
+          application.applicant.email,
+
+        subject:
+          "Interview Invitation",
+
+        html: `
+          <div style="font-family:sans-serif;">
+
+            <h2>
+              Interview Invitation
+            </h2>
+
+            <p>
+              Congratulations!
+            </p>
+
+            <p>
+              You have been shortlisted for
+
+              <b>
+                ${application.job.title}
+              </b>
+            </p>
+
+          </div>
+        `,
+      });
+
+      res.status(200).json({
+        success: true,
+
+        message:
+          "Interview invite sent",
+      });
+
+    } catch (error) {
+
+      console.log(error);
+
+      res.status(500).json({
+        success: false,
+
         message:
           error.message,
       });

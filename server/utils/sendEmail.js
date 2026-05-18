@@ -1,40 +1,57 @@
 import nodemailer from "nodemailer";
 
-const sendEmail = async (email, otp) => {
+const sendEmail = async ({
+  to,
+  subject,
+  html,
+}) => {
 
   try {
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
+    // ==========================
+    // TRANSPORTER
+    // ==========================
 
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    const transporter =
+      nodemailer.createTransport({
+        service: "gmail",
 
-    const info = await transporter.sendMail({
+        auth: {
+          user:
+            process.env.EMAIL_USER,
 
-      from: process.env.EMAIL_USER,
+          pass:
+            process.env.EMAIL_PASS,
+        },
+      });
 
-      to: email,
+    // ==========================
+    // SEND EMAIL
+    // ==========================
 
-      subject: "Job Portal OTP Verification",
+    const info =
+      await transporter.sendMail({
+        from:
+          `"Job Portal" <${process.env.EMAIL_USER}>`,
 
-      html: `
-        <h2>Your OTP Code</h2>
-        <h1>${otp}</h1>
-        <p>This OTP expires in 5 minutes.</p>
-      `,
-    });
+        to,
 
-    console.log("EMAIL SENT:", info.response);
+        subject,
 
-  }
+        html,
+      });
 
-  catch (error) {
+    console.log(
+      "EMAIL SENT:",
+      info.response
+    );
 
-    console.log("EMAIL ERROR:", error);
+  } catch (error) {
+
+    console.log(
+      "EMAIL ERROR:",
+      error.message
+    );
 
     throw error;
 

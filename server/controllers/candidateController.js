@@ -53,9 +53,30 @@ export const updateCandidateProfile =
         fullName,
         email,
         phone,
+        bio,
+        portfolio,
+        linkedin,
+        github,
+        skills,
       } = req.body;
 
+      // =========================
+      // PROFILE IMAGE
+      // =========================
+
+      let profileImage = "";
+
+      if (req.files?.profileImage) {
+
+        profileImage =
+          req.files.profileImage[0].filename;
+
+      }
+
+      // =========================
       // FIND USER
+      // =========================
+
       const user =
         await User.findById(
           req.params.id
@@ -81,6 +102,34 @@ export const updateCandidateProfile =
       await user.save();
 
       // =========================
+      // UPDATE DATA
+      // =========================
+
+      const updateData = {
+        fullName,
+        email,
+        phone,
+        bio,
+        portfolio,
+        linkedin,
+        github,
+        skills: skills
+          ? JSON.parse(skills)
+          : [],
+      };
+
+      // =========================
+      // ADD PROFILE IMAGE
+      // =========================
+
+      if (profileImage) {
+
+        updateData.profileImage =
+          profileImage;
+
+      }
+
+      // =========================
       // UPDATE CANDIDATE TABLE
       // =========================
 
@@ -89,15 +138,15 @@ export const updateCandidateProfile =
           {
             userId: req.params.id,
           },
-          {
-            fullName,
-            email,
-            phone,
-          },
+          updateData,
           {
             new: true,
           }
         );
+
+      // =========================
+      // RESPONSE
+      // =========================
 
       res.status(200).json({
         success: true,

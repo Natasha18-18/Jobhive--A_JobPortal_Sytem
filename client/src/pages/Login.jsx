@@ -693,9 +693,23 @@ if (response.data.success) {
 
                 </Link>
 
+                {/* BACK TO HOME */}
+<motion.button
+  whileHover={{ scale: 1.01 }}
+  whileTap={{ scale: 0.98 }}
+  onClick={() => navigate("/")}
+  className="mt-5 w-full bg-white/5 hover:bg-white/10 border border-white/10 py-4 rounded-2xl font-semibold text-white transition-all duration-300"
+>
+
+  Back To Home
+
+</motion.button>
+
               </p>
 
             </motion.div>
+
+            
 
           </div>
 

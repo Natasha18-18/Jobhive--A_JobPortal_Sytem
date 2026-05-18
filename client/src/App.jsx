@@ -2,6 +2,7 @@ import {
   BrowserRouter,
   Routes,
   Route,
+  Navigate,
 } from "react-router-dom";
 
 import Navbar from "./components/NavBar";
@@ -45,6 +46,14 @@ import EditJob from "./recruiter/EditJob";
 
 function App() {
 
+  // =========================
+  // GET USER
+  // =========================
+
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
+
   return (
     <BrowserRouter>
 
@@ -59,17 +68,45 @@ function App() {
 
         <Route
           path="/"
-          element={<Home />}
+          element={
+            !user ? (
+              <Home />
+            ) : user.role === "recruiter" ? (
+              <Navigate to="/recruiter/dashboard" />
+            ) : (
+              <Navigate to="/jobs" />
+            )
+          }
         />
 
         <Route
           path="/login"
-          element={<Login />}
+          element={
+            user ? (
+              user.role === "recruiter" ? (
+                <Navigate to="/recruiter/dashboard" />
+              ) : (
+                <Navigate to="/jobs" />
+              )
+            ) : (
+              <Login />
+            )
+          }
         />
 
         <Route
           path="/signup"
-          element={<Signup />}
+          element={
+            user ? (
+              user.role === "recruiter" ? (
+                <Navigate to="/recruiter/dashboard" />
+              ) : (
+                <Navigate to="/jobs" />
+              )
+            ) : (
+              <Signup />
+            )
+          }
         />
 
         <Route
@@ -108,7 +145,6 @@ function App() {
           }
         />
 
-        {/* FIXED APPLY ROUTE */}
         <Route
           path="/apply-job/:id"
           element={
@@ -221,7 +257,6 @@ function App() {
           }
         />
 
-        {/* FIXED APPLICANTS ROUTE */}
         <Route
           path="/recruiter/applicants/:id"
           element={

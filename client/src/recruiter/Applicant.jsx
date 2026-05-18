@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 import axios from "axios";
 
 import toast from "react-hot-toast";
@@ -22,6 +24,7 @@ import {
 
 function Applicants() {
 
+  const navigate = useNavigate();
   // =========================
   // PARAMS
   // =========================
