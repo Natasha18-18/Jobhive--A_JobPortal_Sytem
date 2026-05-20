@@ -1,4 +1,7 @@
 import User from "../models/User.js";
+import Job from "../models/JobModel.js";
+
+import Application from "../models/Application.js";
 
 // ==============================
 // GET RECRUITER PROFILE
@@ -143,6 +146,169 @@ export const updateRecruiterProfile =
         success: false,
         message:
           "Profile update failed",
+      });
+
+    }
+
+  };
+
+// ==============================
+// RECRUITER DASHBOARD
+// ==============================
+
+export const getRecruiterDashboard =
+  async (req, res) => {
+
+    try {
+
+      const recruiterId =
+        req.user._id;
+
+      // =========================
+      // TOTAL JOBS
+      // =========================
+
+      const totalJobs =
+        await Job.countDocuments({
+          createdBy: recruiterId,
+        });
+
+      // =========================
+      // RECRUITER JOBS
+      // =========================
+
+      const jobs =
+        await Job.find({
+          createdBy: recruiterId,
+        }).sort({
+          createdAt: -1,
+        });
+
+      const jobIds =
+        jobs.map(
+          (job) => job._id
+        );
+
+      // =========================
+      // TOTAL APPLICATIONS
+      // =========================
+
+      const totalApplications =
+        await Application.countDocuments({
+          job: {
+            $in: jobIds,
+          },
+        });
+
+      // =========================
+      // ACCEPTED APPLICATIONS
+      // =========================
+
+      const acceptedApplications =
+        await Application.countDocuments({
+          job: {
+            $in: jobIds,
+          },
+          status: "Accepted",
+        });
+
+      // =========================
+      // TOTAL VIEWS
+      // =========================
+
+      const totalViews =
+        jobs.reduce(
+          (acc, job) =>
+            acc + (job.views || 0),
+          0
+        );
+
+      // =========================
+      // HIRING RATE
+      // =========================
+
+      const hiringRate =
+        totalApplications > 0
+          ? Math.round(
+              (acceptedApplications /
+                totalApplications) *
+                100
+            )
+          : 0;
+
+      // =========================
+      // RECENT JOBS
+      // =========================
+
+      const recentJobs =
+        await Promise.all(
+
+          jobs
+            .slice(0, 5)
+            .map(async (job) => {
+
+              const applicants =
+                await Application.countDocuments({
+                  job: job._id,
+                });
+
+              return {
+                _id: job._id,
+
+                title: job.title,
+
+                company:
+                  job.companyName,
+
+                applicants,
+
+                status:
+                  job.openStatus
+                    ? "Active"
+                    : "Closed",
+              };
+
+            })
+
+        );
+
+      // =========================
+      // RESPONSE
+      // =========================
+
+      res.status(200).json({
+
+        success: true,
+
+        dashboard: {
+
+          totalJobs,
+
+          totalApplications,
+
+          acceptedApplications,
+
+          totalViews,
+
+          hiringRate,
+
+          recentJobs,
+
+        },
+
+      });
+
+    } catch (error) {
+
+      console.log(error);
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "Failed to load dashboard",
+
       });
 
     }

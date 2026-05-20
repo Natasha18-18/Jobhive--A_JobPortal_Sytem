@@ -35,27 +35,25 @@ function EditProfile() {
   // FORM STATES
   // =========================
 
-  const [formData, setFormData] =
-    useState({
-      userId: "",
+const [formData, setFormData] =
+  useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    role: "",
+    bio: "",
 
-      fullName: "",
-      email: "",
-      phone: "",
-      role: "",
-      bio: "",
+    headline: "",
+    location: "",
+    experience: "",
+    education: "",
 
-      headline: "",
-      location: "",
-      experience: "",
-      education: "",
+    portfolio: "",
+    linkedin: "",
+    github: "",
 
-      portfolio: "",
-      linkedin: "",
-      github: "",
-
-      profileImage: "",
-    });
+    profileImage: "",
+  });
 
   const [profileImage, setProfileImage] =
     useState(null);
@@ -115,50 +113,46 @@ function EditProfile() {
         const profile =
           res.data.data;
 
-        setFormData({
-          userId:
-            profile.userId ||
-            user._id,
+setFormData({
+  fullName:
+    profile.fullName || "",
 
-          fullName:
-            profile.fullName || "",
+  email:
+    profile.email || "",
 
-          email:
-            profile.email || "",
+  phone:
+    profile.phone || "",
 
-          phone:
-            profile.phone || "",
+  role:
+    profile.role || "",
 
-          role:
-            profile.role || "",
+  bio:
+    profile.bio || "",
 
-          bio:
-            profile.bio || "",
+  headline:
+    profile.headline || "",
 
-          headline:
-            profile.headline || "",
+  location:
+    profile.location || "",
 
-          location:
-            profile.location || "",
+  experience:
+    profile.experience || "",
 
-          experience:
-            profile.experience || "",
+  education:
+    profile.education || "",
 
-          education:
-            profile.education || "",
+  portfolio:
+    profile.portfolio || "",
 
-          portfolio:
-            profile.portfolio || "",
+  linkedin:
+    profile.linkedin || "",
 
-          linkedin:
-            profile.linkedin || "",
+  github:
+    profile.github || "",
 
-          github:
-            profile.github || "",
-
-          profileImage:
-            profile.profileImage || "",
-        });
+  profileImage:
+    profile.profileImage || "",
+});
 
         setSkills(
           profile.skills || []
@@ -168,9 +162,15 @@ function EditProfile() {
 
     } catch (error) {
 
-      console.log(error);
+  if (
+    error.response?.status !== 404
+  ) {
 
-    }
+    console.log(error);
+
+  }
+
+}
 
   };
 
@@ -186,6 +186,7 @@ function EditProfile() {
       [e.target.name]:
         e.target.value,
     });
+
 
   };
 
@@ -256,22 +257,23 @@ function EditProfile() {
         // TEXT DATA
         // =========================
 
-        Object.keys(
-          formData
-        ).forEach((key) => {
+Object.keys(
+  formData
+).forEach((key) => {
 
-          if (
-            key !== "profileImage"
-          ) {
+  if (
+    key !== "profileImage" &&
+    formData[key] !== ""
+  ) {
 
-            data.append(
-              key,
-              formData[key]
-            );
+    data.append(
+      key,
+      formData[key]
+    );
 
-          }
+  }
 
-        });
+});
 
         // =========================
         // SKILLS

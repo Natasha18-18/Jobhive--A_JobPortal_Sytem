@@ -1,4 +1,10 @@
-import { useState } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+} from "react";
+
+import axios from "axios";
 
 import {
   motion,
@@ -17,103 +23,184 @@ import {
 function CandidateMessages() {
 
   // =========================
-  // RECRUITERS
+  // STATES
   // =========================
 
-  const [recruiters] = useState([
-    {
-      id: 1,
-      name: "TechNova HR",
-      company: "TechNova Solutions",
-      online: true,
-      unread: 2,
-      image:
-        "https://i.pravatar.cc/150?img=45",
-    },
+  const [recruiters, setRecruiters] =
+    useState([]);
 
-    {
-      id: 2,
-      name: "Google Recruiter",
-      company: "Google",
-      online: false,
-      unread: 0,
-      image:
-        "https://i.pravatar.cc/150?img=12",
-    },
-
-    {
-      id: 3,
-      name: "Infosys Hiring",
-      company: "Infosys",
-      online: true,
-      unread: 1,
-      image:
-        "https://i.pravatar.cc/150?img=22",
-    },
-  ]);
-
-  // =========================
-  // ACTIVE CHAT
-  // =========================
-
-  const [activeRecruiter, setActiveRecruiter] =
-    useState(recruiters[0]);
-
-  // =========================
-  // MESSAGES
-  // =========================
+  const [
+    activeRecruiter,
+    setActiveRecruiter,
+  ] = useState(null);
 
   const [messages, setMessages] =
-    useState([
-      {
-        sender: "recruiter",
-        text: "Hello Rahul, we reviewed your application.",
-        time: "9:30 AM",
-      },
-
-      {
-        sender: "candidate",
-        text: "Thank you for considering me 😊",
-        time: "9:32 AM",
-      },
-
-      {
-        sender: "recruiter",
-        text: "Can you attend an interview tomorrow?",
-        time: "9:35 AM",
-      },
-    ]);
-
-  // =========================
-  // NEW MESSAGE
-  // =========================
+    useState([]);
 
   const [newMessage, setNewMessage] =
     useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const messagesEndRef = useRef(null);
+
+  // =========================
+  // TOKEN
+  // =========================
+
+  const token =
+    localStorage.getItem("token");
+
+  // =========================
+  // FETCH RECRUITERS
+  // =========================
+
+  const fetchRecruiters =
+    async () => {
+
+      try {
+
+        const { data } =
+          await axios.get(
+            "http://localhost:5000/api/recruiters",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+        setRecruiters(data.data);
+
+        if (
+          data.data.length > 0
+        ) {
+          setActiveRecruiter(
+            data.data[0]
+          );
+        }
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+    };
+
+  // =========================
+  // FETCH MESSAGES
+  // =========================
+
+  const fetchMessages =
+    async () => {
+
+      if (!activeRecruiter)
+        return;
+
+      try {
+
+        setLoading(true);
+
+        const { data } =
+          await axios.get(
+            `http://localhost:5000/api/messages/${activeRecruiter._id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+        setMessages(
+          data.data
+        );
+
+        setLoading(false);
+
+      } catch (error) {
+
+        console.log(error);
+
+        setLoading(false);
+
+      }
+    };
 
   // =========================
   // SEND MESSAGE
   // =========================
 
-  const handleSendMessage = () => {
+  const handleSendMessage =
+    async () => {
 
-    if (!newMessage.trim())
-      return;
+      if (!newMessage.trim())
+        return;
 
-    const newMsg = {
-      sender: "candidate",
-      text: newMessage,
-      time: "Now",
+      try {
+
+        const { data } =
+          await axios.post(
+            "http://localhost:5000/api/messages/send",
+            {
+              receiver:
+                activeRecruiter._id,
+              text: newMessage,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+        setMessages((prev) => [
+          ...prev,
+          data.data,
+        ]);
+
+        setNewMessage("");
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
     };
 
-    setMessages([
-      ...messages,
-      newMsg,
-    ]);
+  // =========================
+  // AUTO SCROLL
+  // =========================
 
-    setNewMessage("");
+  useEffect(() => {
 
-  };
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+
+  }, [messages]);
+
+  // =========================
+  // INITIAL FETCH
+  // =========================
+
+  useEffect(() => {
+
+    fetchRecruiters();
+
+  }, []);
+
+  // =========================
+  // FETCH CHAT WHEN USER CHANGE
+  // =========================
+
+  useEffect(() => {
+
+    if (activeRecruiter) {
+      fetchMessages();
+    }
+
+  }, [activeRecruiter]);
 
   return (
     <div className="min-h-screen bg-[#050816] pt-28 px-4 pb-10 overflow-hidden">
@@ -198,7 +285,7 @@ function CandidateMessages() {
                 (recruiter) => (
                   <motion.div
                     key={
-                      recruiter.id
+                      recruiter._id
                     }
                     whileHover={{
                       scale: 1.01,
@@ -209,8 +296,8 @@ function CandidateMessages() {
                       )
                     }
                     className={`flex items-center gap-4 p-5 cursor-pointer border-b border-white/5 transition-all duration-300 ${
-                      activeRecruiter.id ===
-                      recruiter.id
+                      activeRecruiter?._id ===
+                      recruiter._id
                         ? "bg-cyan-500/10"
                         : "hover:bg-white/5"
                     }`}
@@ -221,7 +308,8 @@ function CandidateMessages() {
 
                       <img
                         src={
-                          recruiter.image
+                          recruiter.profileImage ||
+                          "https://i.pravatar.cc/150"
                         }
                         alt=""
                         className="w-14 h-14 rounded-2xl object-cover"
@@ -246,23 +334,12 @@ function CandidateMessages() {
 
                         </h3>
 
-                        {recruiter.unread >
-                          0 && (
-                          <span className="min-w-[22px] h-[22px] rounded-full bg-cyan-500 text-white text-xs flex items-center justify-center font-bold">
-
-                            {
-                              recruiter.unread
-                            }
-
-                          </span>
-                        )}
-
                       </div>
 
                       <p className="text-gray-400 text-sm mt-1">
 
                         {
-                          recruiter.company
+                          recruiter.companyName
                         }
 
                       </p>
@@ -291,112 +368,124 @@ function CandidateMessages() {
           >
 
             {/* TOP */}
-            <div className="flex items-center justify-between p-5 border-b border-white/10 bg-white/5">
+            {activeRecruiter && (
+              <div className="flex items-center justify-between p-5 border-b border-white/10 bg-white/5">
 
-              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4">
 
-                <div className="relative">
+                  <div className="relative">
 
-                  <img
-                    src={
-                      activeRecruiter.image
-                    }
-                    alt=""
-                    className="w-14 h-14 rounded-2xl object-cover"
-                  />
+                    <img
+                      src={
+                        activeRecruiter.profileImage ||
+                        "https://i.pravatar.cc/150"
+                      }
+                      alt=""
+                      className="w-14 h-14 rounded-2xl object-cover"
+                    />
 
-                  {activeRecruiter.online && (
-                    <span className="absolute bottom-1 right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-[#050816]"></span>
-                  )}
+                    {activeRecruiter.online && (
+                      <span className="absolute bottom-1 right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-[#050816]"></span>
+                    )}
 
-                </div>
+                  </div>
 
-                <div>
+                  <div>
 
-                  <h2 className="text-white font-bold text-lg">
+                    <h2 className="text-white font-bold text-lg">
 
-                    {
-                      activeRecruiter.name
-                    }
+                      {
+                        activeRecruiter.name
+                      }
 
-                  </h2>
+                    </h2>
 
-                  <p className="text-sm text-gray-400 flex items-center gap-2">
+                    <p className="text-sm text-gray-400 flex items-center gap-2">
 
-                    <FaCircle className="text-green-400 text-[10px]" />
+                      <FaCircle className="text-green-400 text-[10px]" />
 
-                    {activeRecruiter.online
-                      ? "Online"
-                      : "Offline"}
+                      {activeRecruiter.online
+                        ? "Online"
+                        : "Offline"}
 
-                  </p>
+                    </p>
+
+                  </div>
 
                 </div>
 
               </div>
-
-            </div>
+            )}
 
             {/* MESSAGES */}
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
 
-              <AnimatePresence>
+              {loading ? (
+                <p className="text-gray-400 text-center">
+                  Loading messages...
+                </p>
+              ) : (
+                <AnimatePresence>
 
-                {messages.map(
-                  (
-                    message,
-                    index
-                  ) => (
-                    <motion.div
-                      key={index}
-                      initial={{
-                        opacity: 0,
-                        y: 20,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                      }}
-                      className={`flex ${
-                        message.sender ===
-                        "candidate"
-                          ? "justify-end"
-                          : "justify-start"
-                      }`}
-                    >
+                  {messages.map(
+                    (
+                      message,
+                      index
+                    ) => (
 
-                      <div
-                        className={`max-w-[70%] px-5 py-4 rounded-3xl shadow-xl ${
+                      <motion.div
+                        key={index}
+                        initial={{
+                          opacity: 0,
+                          y: 20,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          y: 0,
+                        }}
+                        className={`flex ${
                           message.sender ===
-                          "candidate"
-                            ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-br-md"
-                            : "bg-white/10 border border-white/10 text-gray-200 rounded-bl-md"
+                          activeRecruiter._id
+                            ? "justify-start"
+                            : "justify-end"
                         }`}
                       >
 
-                        <p className="leading-relaxed">
+                        <div
+                          className={`max-w-[70%] px-5 py-4 rounded-3xl shadow-xl ${
+                            message.sender ===
+                            activeRecruiter._id
+                              ? "bg-white/10 border border-white/10 text-gray-200 rounded-bl-md"
+                              : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-br-md"
+                          }`}
+                        >
 
-                          {
-                            message.text
-                          }
+                          <p className="leading-relaxed">
 
-                        </p>
+                            {
+                              message.text
+                            }
 
-                        <p className="text-xs mt-2 opacity-70 text-right">
+                          </p>
 
-                          {
-                            message.time
-                          }
+                          <p className="text-xs mt-2 opacity-70 text-right">
 
-                        </p>
+                            {new Date(
+                              message.createdAt
+                            ).toLocaleTimeString()}
 
-                      </div>
+                          </p>
 
-                    </motion.div>
-                  )
-                )}
+                        </div>
 
-              </AnimatePresence>
+                      </motion.div>
+                    )
+                  )}
+
+                </AnimatePresence>
+              )}
+
+              <div ref={messagesEndRef}></div>
 
             </div>
 

@@ -38,6 +38,21 @@ const applicationSchema =
         type: String,
       },
 
+         interviewMode: {
+        type: String,
+      },
+
+      meetingLink: {
+        type: String,
+      },
+
+        interviewLocation: {
+        type: String,
+      },
+
+       interviewMessage: {
+        type: String,
+      },
     },
     {
       timestamps: true,

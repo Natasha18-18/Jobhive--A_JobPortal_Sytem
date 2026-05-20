@@ -1,4 +1,4 @@
-import Candidate from "../models/candidateModel.js";
+import Candidate from "../models/candidate.js";
 import User from "../models/User.js";
 
 export const createCandidateProfile = async (

@@ -13,7 +13,6 @@ import {
   FaArrowLeft,
   FaEnvelope,
   FaPhone,
-  FaUserTie,
   FaMapMarkerAlt,
   FaGlobe,
   FaLinkedin,
@@ -33,69 +32,15 @@ function CandidateProfile() {
   const [loading, setLoading] =
     useState(true);
 
-    const handleSubmit = async (
-  e
-) => {
-
-  e.preventDefault();
-
-  try {
-
-    const token =
-      localStorage.getItem(
-        "token"
-      );
-
-    await axios.put(
-      "http://localhost:5002/api/user/candidate/update",
-
-      {
-        fullName,
-        phone,
-        headline,
-        bio,
-        location,
-        experience,
-        portfolio,
-        linkedin,
-        github,
-        resume,
-
-        skills:
-          skills
-            .split(",")
-            .map((s) =>
-              s.trim()
-            ),
-      },
-
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
-
-    toast.success(
-      "Profile Updated"
-    );
-
-  } catch (error) {
-
-    toast.error(
-      "Update failed"
-    );
-
-  }
-
-};
+  // =========================
+  // FETCH CANDIDATE
+  // =========================
 
   useEffect(() => {
 
     fetchCandidate();
 
-  }, []);
+  }, [id]);
 
   const fetchCandidate =
     async () => {
@@ -109,7 +54,7 @@ function CandidateProfile() {
 
         const res =
           await axios.get(
-            `http://localhost:5002/api/auth/candidate/${id}`,
+            `http://localhost:5002/api/candidate/${id}`,
             {
               headers: {
                 Authorization:
@@ -118,8 +63,12 @@ function CandidateProfile() {
             }
           );
 
+        console.log(
+          res.data
+        );
+
         setCandidate(
-          res.data.user
+          res.data.data
         );
 
       } catch (error) {
@@ -140,6 +89,10 @@ function CandidateProfile() {
 
     };
 
+  // =========================
+  // LOADING
+  // =========================
+
   if (loading) {
 
     return (
@@ -149,6 +102,7 @@ function CandidateProfile() {
         Loading...
 
       </div>
+
     );
 
   }
@@ -165,7 +119,7 @@ function CandidateProfile() {
           onClick={() =>
             navigate(-1)
           }
-          className="mb-8 flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/10"
+          className="mb-8 flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 transition"
         >
 
           <FaArrowLeft />
@@ -184,10 +138,11 @@ function CandidateProfile() {
 
             <img
               src={
-                candidate?.profileImage ||
-                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                candidate?.profileImage
+                  ? `http://localhost:5002/uploads/${candidate.profileImage}`
+                  : "https://cdn-icons-png.flaticon.com/512/149/149071.png"
               }
-              alt=""
+              alt="profile"
               className="w-40 h-40 rounded-full object-cover border-4 border-cyan-400"
             />
 
@@ -259,6 +214,44 @@ function CandidateProfile() {
 
           </div>
 
+          {/* EXPERIENCE */}
+
+          <div className="mt-12">
+
+            <h2 className="text-3xl font-black mb-4">
+
+              Experience
+
+            </h2>
+
+            <p className="text-gray-300 leading-8">
+
+              {candidate?.experience ||
+                "No experience added"}
+
+            </p>
+
+          </div>
+
+          {/* EDUCATION */}
+
+          <div className="mt-12">
+
+            <h2 className="text-3xl font-black mb-4">
+
+              Education
+
+            </h2>
+
+            <p className="text-gray-300 leading-8">
+
+              {candidate?.education ||
+                "No education added"}
+
+            </p>
+
+          </div>
+
           {/* SKILLS */}
 
           <div className="mt-12">
@@ -271,8 +264,9 @@ function CandidateProfile() {
 
             <div className="flex flex-wrap gap-4">
 
-              {candidate?.skills?.length >
-              0 ? (
+              {candidate?.skills &&
+              candidate.skills.length >
+                0 ? (
 
                 candidate.skills.map(
                   (
@@ -298,6 +292,7 @@ function CandidateProfile() {
                   No skills added
 
                 </p>
+
               )}
 
             </div>
@@ -324,7 +319,7 @@ function CandidateProfile() {
                   }
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10"
+                  className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 transition"
                 >
 
                   <FaGlobe />
@@ -373,17 +368,15 @@ function CandidateProfile() {
               {candidate?.resume && (
 
                 <a
-                  href={
-                    candidate.resume
-                  }
+                  href={`http://localhost:5002/uploads/${candidate.resume}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-red-500/10 text-red-400"
+                  className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition"
                 >
 
                   <FaFilePdf />
 
-                  Resume
+                  View Resume
 
                 </a>
               )}
@@ -398,6 +391,7 @@ function CandidateProfile() {
 
     </div>
   );
+
 }
 
 export default CandidateProfile;

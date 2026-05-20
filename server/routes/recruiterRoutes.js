@@ -3,6 +3,7 @@ import express from "express";
 import {
   getRecruiterProfile,
   updateRecruiterProfile,
+  getRecruiterDashboard,
 } from "../controllers/recruiterController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -16,6 +17,13 @@ router.get(
   "/profile",
   protect,
   getRecruiterProfile
+);
+
+// DASHBOARD
+router.get(
+  "/dashboard",
+  protect,
+  getRecruiterDashboard
 );
 
 // UPDATE PROFILE

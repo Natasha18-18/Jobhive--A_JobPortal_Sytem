@@ -305,8 +305,23 @@ export const getSingleApplication =
             req.params.id
           )
           .populate(
-            "applicant"
-          )
+  "applicant",
+  `
+  fullName
+  email
+  phone
+  profileImage
+  headline
+  bio
+  location
+  experience
+  skills
+  portfolio
+  linkedin
+  github
+  resume
+  `
+)
           .populate(
             "job"
           );

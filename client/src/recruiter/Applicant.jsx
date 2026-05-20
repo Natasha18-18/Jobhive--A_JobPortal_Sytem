@@ -21,6 +21,8 @@ import {
   FaVideo,
   FaPhone,
   FaFilePdf,
+  FaArrowLeft,
+  FaBriefcase,
 } from "react-icons/fa";
 
 function Applicants() {
@@ -264,16 +266,16 @@ function Applicants() {
     switch (status) {
 
       case "Accepted":
-        return "bg-green-500/20 text-green-400 border border-green-500/20";
+        return "bg-green-500/15 text-green-400 border border-green-500/20";
 
       case "Rejected":
-        return "bg-red-500/20 text-red-400 border border-red-500/20";
+        return "bg-red-500/15 text-red-400 border border-red-500/20";
 
       case "Deleted":
-        return "bg-gray-500/20 text-gray-300 border border-gray-500/20";
+        return "bg-gray-500/15 text-gray-300 border border-gray-500/20";
 
       default:
-        return "bg-yellow-500/20 text-yellow-400 border border-yellow-500/20";
+        return "bg-yellow-500/15 text-yellow-400 border border-yellow-500/20";
 
     }
 
@@ -281,7 +283,7 @@ function Applicants() {
 
   return (
 
-    <div className="min-h-screen bg-[#050816] text-white pt-32 pb-20 px-6">
+    <div className="min-h-screen bg-[#050816] text-white pt-28 pb-20 px-5 md:px-8">
 
       <div className="max-w-7xl mx-auto">
 
@@ -290,20 +292,28 @@ function Applicants() {
         <motion.div
           initial={{
             opacity: 0,
-            y: 30,
+            y: 20,
           }}
           animate={{
             opacity: 1,
             y: 0,
           }}
-          className="flex items-center justify-between flex-wrap gap-5"
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-6"
         >
 
           <div>
 
-            <h1 className="text-5xl font-black">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-medium mb-5">
 
-              Job
+              <FaBriefcase />
+
+              Recruitment Dashboard
+
+            </div>
+
+            <h1 className="text-4xl md:text-5xl font-black leading-tight">
+
+              Manage Job
 
               <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
 
@@ -316,7 +326,7 @@ function Applicants() {
 
             <p className="text-gray-400 mt-3 text-lg">
 
-              Manage all job applicants
+              Review applications, resumes and hiring status.
 
             </p>
 
@@ -326,8 +336,10 @@ function Applicants() {
             onClick={() =>
               navigate(-1)
             }
-            className="px-6 py-3 rounded-2xl bg-white/10 border border-white/10 hover:border-cyan-400/40 transition"
+            className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-400/30 hover:bg-white/10 transition duration-300 w-fit"
           >
+
+            <FaArrowLeft />
 
             Back
 
@@ -339,7 +351,7 @@ function Applicants() {
 
         {loading ? (
 
-          <div className="flex justify-center mt-24">
+          <div className="flex justify-center items-center h-[400px]">
 
             <FaSpinner className="animate-spin text-5xl text-cyan-400" />
 
@@ -353,9 +365,9 @@ function Applicants() {
             {applications.length ===
             0 ? (
 
-              <div className="text-center mt-24">
+              <div className="mt-24 bg-white/5 border border-white/10 rounded-[30px] p-14 text-center">
 
-                <div className="w-28 h-28 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-5xl text-cyan-400 mx-auto">
+                <div className="w-24 h-24 rounded-3xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-4xl text-cyan-400 mx-auto">
 
                   <FaUser />
 
@@ -369,7 +381,7 @@ function Applicants() {
 
                 <p className="text-gray-400 mt-3 text-lg">
 
-                  Applications will appear here.
+                  Applications submitted for this job will appear here.
 
                 </p>
 
@@ -377,7 +389,7 @@ function Applicants() {
 
             ) : (
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-14">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-14">
 
                 <AnimatePresence>
 
@@ -393,7 +405,7 @@ function Applicants() {
                         }
                         initial={{
                           opacity: 0,
-                          y: 30,
+                          y: 20,
                         }}
                         animate={{
                           opacity: 1,
@@ -401,38 +413,33 @@ function Applicants() {
                         }}
                         exit={{
                           opacity: 0,
-                          scale: 0.9,
+                          scale: 0.95,
                         }}
                         transition={{
                           delay:
-                            index * 0.1,
+                            index * 0.08,
                         }}
                         whileHover={{
-                          y: -5,
+                          y: -4,
                         }}
-                        className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-2xl shadow-2xl relative overflow-hidden"
+                        className="relative bg-[#0b1120]/90 border border-white/10 rounded-[30px] p-8 overflow-hidden backdrop-blur-xl"
                       >
 
-                        <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/10 blur-3xl rounded-full"></div>
+                        <div className="absolute top-0 right-0 w-52 h-52 bg-cyan-500/10 blur-3xl rounded-full"></div>
 
                         <div className="relative z-10">
 
-                          {/* PROFILE */}
+                          {/* TOP */}
 
-                          <div className="flex items-center gap-5">
+                          <div className="flex items-start justify-between gap-5 flex-wrap">
 
-                            <img
-                              src={
-                                application
-                                  ?.applicant
-                                  ?.profileImage ||
-                                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                              }
-                              alt=""
-                              className="w-20 h-20 rounded-full object-cover border-2 border-cyan-400"
-                            />
+                            <div className="flex-1">
 
-                            <div>
+                              <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-2xl text-cyan-400 mb-5">
+
+                                <FaUser />
+
+                              </div>
 
                               <h2 className="text-2xl font-black">
 
@@ -444,41 +451,47 @@ function Applicants() {
 
                               </h2>
 
-                              <div className="flex items-center gap-2 text-gray-400 mt-2">
+                              <div className="space-y-3 mt-5">
 
-                                <FaEnvelope />
+                                <div className="flex items-center gap-3 text-gray-300">
 
-                                {
-                                  application
-                                    ?.applicant
-                                    ?.email
-                                }
+                                  <FaEnvelope className="text-cyan-400" />
 
-                              </div>
+                                  <span className="break-all">
 
-                              <div className="flex items-center gap-2 text-gray-400 mt-2">
+                                    {
+                                      application
+                                        ?.applicant
+                                        ?.email
+                                    }
 
-                                <FaPhone />
+                                  </span>
 
-                                {
-                                  application
-                                    ?.applicant
-                                    ?.phone ||
-                                  "N/A"
-                                }
+                                </div>
+
+                                <div className="flex items-center gap-3 text-gray-300">
+
+                                  <FaPhone className="text-cyan-400" />
+
+                                  <span>
+
+                                    {
+                                      application
+                                        ?.applicant
+                                        ?.phone ||
+                                      "N/A"
+                                    }
+
+                                  </span>
+
+                                </div>
 
                               </div>
 
                             </div>
 
-                          </div>
-
-                          {/* STATUS */}
-
-                          <div className="mt-6">
-
                             <span
-                              className={`px-5 py-2 rounded-full text-sm font-bold ${getStatusStyle(
+                              className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap ${getStatusStyle(
                                 application.status
                               )}`}
                             >
@@ -493,16 +506,16 @@ function Applicants() {
 
                           {/* ACTIONS */}
 
-                          <div className="flex flex-wrap gap-4 mt-8">
+                          <div className="flex flex-wrap gap-4 mt-10">
 
                             {/* VIEW PROFILE */}
 
                             <motion.button
                               whileHover={{
-                                scale: 1.05,
+                                scale: 1.03,
                               }}
                               whileTap={{
-                                scale: 0.95,
+                                scale: 0.97,
                               }}
                               onClick={() =>
                                 navigate(
@@ -514,7 +527,7 @@ function Applicants() {
 
                               <FaUser />
 
-                              View Profile
+                              View Details
 
                             </motion.button>
 
@@ -546,10 +559,10 @@ function Applicants() {
 
                             <motion.button
                               whileHover={{
-                                scale: 1.05,
+                                scale: 1.03,
                               }}
                               whileTap={{
-                                scale: 0.95,
+                                scale: 0.97,
                               }}
                               disabled={
                                 actionLoading ===
@@ -577,10 +590,10 @@ function Applicants() {
 
                             <motion.button
                               whileHover={{
-                                scale: 1.05,
+                                scale: 1.03,
                               }}
                               whileTap={{
-                                scale: 0.95,
+                                scale: 0.97,
                               }}
                               disabled={
                                 actionLoading ===
@@ -608,10 +621,10 @@ function Applicants() {
 
                             <motion.button
                               whileHover={{
-                                scale: 1.05,
+                                scale: 1.03,
                               }}
                               whileTap={{
-                                scale: 0.95,
+                                scale: 0.97,
                               }}
                               disabled={
                                 actionLoading ===
@@ -641,17 +654,17 @@ function Applicants() {
 
                               <motion.button
                                 whileHover={{
-                                  scale: 1.05,
+                                  scale: 1.03,
                                 }}
                                 whileTap={{
-                                  scale: 0.95,
+                                  scale: 0.97,
                                 }}
                                 onClick={() =>
                                   navigate(
                                     `/recruiter/interview/${application._id}`
                                   )
                                 }
-                                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white transition font-semibold"
+                                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold shadow-lg shadow-cyan-500/20"
                               >
 
                                 <FaVideo />

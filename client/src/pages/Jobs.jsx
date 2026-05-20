@@ -714,7 +714,7 @@ const toggleSaveJob = async (
               (job, index) => (
 
                 <motion.div
-                  key={job._id}
+                  key={`${job._id}-${index}`}
                   initial={{
                     opacity: 0,
                     y: 40,

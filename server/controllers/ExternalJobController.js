@@ -1,39 +1,97 @@
 import axios from "axios";
 
-export const getExternalJobs =
-  async (req, res) => {
+export const getExternalJobs = async (req, res) => {
 
-    try {
+  try {
 
-      const search =
-        req.query.search || "";
+    console.log("🔥 External Jobs Fetching");
 
-      const location =
-        req.query.location || "";
+    const response =
+      await axios.get(
+        "https://remoteok.com/api"
+      );
 
-      const url =
-        `https://api.adzuna.com/v1/api/jobs/in/search/1?app_id=${process.env.ADZUNA_APP_ID}&app_key=${process.env.ADZUNA_API_KEY}&results_per_page=20&what=${encodeURIComponent(search)}&where=${encodeURIComponent(location)}`;
+    const jobs =
+      response.data
+        .filter(
+          (job) =>
+            job.position
+        )
+        .slice(0, 30);
 
-      const response =
-        await axios.get(url);
+const formattedJobs =
+  jobs.map((job, index) => ({
 
-      res.json({
-        success: true,
-        jobs:
-          response.data.results,
-      });
+    _id:
+      `external_${index}_${job.id || Math.random()}`,
 
-    }
+    title:
+      job.position ||
 
-    catch (error) {
+      job.title,
 
-      console.log(error);
+    company:
+      job.company ||
 
-      res.status(500).json({
-        success: false,
-        message: "Server Error",
-      });
+      job.company_name ||
 
-    }
+      "Unknown Company",
+
+    location:
+      job.location ||
+
+      "Remote",
+
+    salary:
+      "Not Disclosed",
+
+    type:
+      "Remote",
+
+    experience:
+      "Experience Required",
+
+    description:
+      job.description ||
+
+      "No description",
+
+    redirect_url:
+      job.url ||
+
+      "#",
+
+    external: true,
+
+}));
+
+    return res.status(200).json({
+
+      success: true,
+
+      jobs:
+        formattedJobs,
+
+    });
+
+  }
+
+  catch (error) {
+
+    console.log(error);
+
+    return res.status(500).json({
+
+      success: false,
+
+      message:
+        "Failed To Fetch External Jobs",
+
+      error:
+        error.message,
+
+    });
+
+  }
 
 };

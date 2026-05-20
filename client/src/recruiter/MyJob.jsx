@@ -15,13 +15,9 @@ import {
   FaFilter,
   FaPlusCircle,
   FaEdit,
-  FaEye,
 } from "react-icons/fa";
 
-import {
-  Link,
-  useNavigate,
-} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import axios from "axios";
 
@@ -188,9 +184,9 @@ function MyJobs() {
 
       {/* BG EFFECT */}
 
-      <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500/10 blur-3xl rounded-full"></div>
+      <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500/10 blur-3xl rounded-full pointer-events-none"></div>
 
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/10 blur-3xl rounded-full"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/10 blur-3xl rounded-full pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto relative z-10">
 
@@ -222,25 +218,26 @@ function MyJobs() {
 
           {/* UPLOAD BUTTON */}
 
-          <Link to="/recruiter/upload-job">
+          <motion.button
+            whileHover={{
+              scale: 1.05,
+            }}
+            whileTap={{
+              scale: 0.95,
+            }}
+            onClick={() =>
+              navigate(
+                "/recruiter/upload-job"
+              )
+            }
+            className="relative z-50 flex items-center gap-3 px-7 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 shadow-2xl font-bold text-lg cursor-pointer"
+          >
 
-            <motion.button
-              whileHover={{
-                scale: 1.05,
-              }}
-              whileTap={{
-                scale: 0.95,
-              }}
-              className="flex items-center gap-3 px-7 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 shadow-2xl font-bold text-lg"
-            >
+            <FaPlusCircle />
 
-              <FaPlusCircle />
+            Upload New Job
 
-              Upload New Job
-
-            </motion.button>
-
-          </Link>
+          </motion.button>
 
         </div>
 
@@ -315,6 +312,7 @@ function MyJobs() {
         ) : (
 
           <>
+
             {/* JOBS GRID */}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
@@ -427,29 +425,6 @@ function MyJobs() {
                       {/* BUTTONS */}
 
                       <div className="mt-8 flex flex-wrap gap-4 relative z-10">
-
-                        {/* VIEW */}
-
-                        {/* <motion.button
-                          whileHover={{
-                            scale: 1.05,
-                          }}
-                          whileTap={{
-                            scale: 0.95,
-                          }}
-                          onClick={() =>
-                            navigate(
-                              `/jobs/${job._id}`
-                            )
-                          }
-                          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold shadow-xl"
-                        >
-
-                          <FaEye />
-
-                          View
-
-                        </motion.button> */}
 
                         {/* EDIT */}
 

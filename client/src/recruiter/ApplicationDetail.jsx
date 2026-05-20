@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-
 import axios from "axios";
-
 import toast from "react-hot-toast";
 
 import {
@@ -10,27 +8,20 @@ import {
   Link,
 } from "react-router-dom";
 
-import { motion } from "framer-motion";
-
 import {
-  FaUserTie,
+  FaArrowLeft,
   FaEnvelope,
   FaPhone,
-  FaBriefcase,
-  FaFilePdf,
-  FaArrowLeft,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaDownload,
-  FaTrash,
-  FaVideo,
-  FaEye,
   FaMapMarkerAlt,
-  FaGlobe,
+  FaBriefcase,
   FaLinkedin,
-  FaGraduationCap,
-  FaTools,
-  FaBuilding,
+  FaGithub,
+  FaGlobe,
+  FaFilePdf,
+  FaUserTie,
+  FaCheckCircle,
+  FaClock,
+  FaUserGraduate,
 } from "react-icons/fa";
 
 function ApplicantDetails() {
@@ -39,7 +30,7 @@ function ApplicantDetails() {
 
   const { id } = useParams();
 
-  const [applicant, setApplicant] =
+  const [application, setApplication] =
     useState(null);
 
   const [loading, setLoading] =
@@ -48,20 +39,17 @@ function ApplicantDetails() {
   const [status, setStatus] =
     useState("Pending");
 
-  const [actionLoading, setActionLoading] =
-    useState(false);
-
   // =========================
-  // FETCH APPLICANT
+  // FETCH APPLICATION
   // =========================
 
   useEffect(() => {
 
-    fetchApplicant();
+    fetchApplication();
 
   }, [id]);
 
-  const fetchApplicant =
+  const fetchApplication =
     async () => {
 
       try {
@@ -82,13 +70,12 @@ function ApplicantDetails() {
             }
           );
 
-        setApplicant(
+        setApplication(
           res.data.application
         );
 
         setStatus(
-          res.data.application
-            .status
+          res.data.application.status
         );
 
       } catch (error) {
@@ -96,7 +83,7 @@ function ApplicantDetails() {
         console.log(error);
 
         toast.error(
-          "Failed to load applicant"
+          "Failed to load applicant details"
         );
 
       } finally {
@@ -114,21 +101,7 @@ function ApplicantDetails() {
   const updateStatus =
     async (newStatus) => {
 
-      if (
-        status === "Accepted" ||
-        status === "Rejected" ||
-        status === "Deleted"
-      ) {
-
-        return toast.error(
-          `Application already ${status}`
-        );
-
-      }
-
       try {
-
-        setActionLoading(true);
 
         const token =
           localStorage.getItem(
@@ -149,12 +122,12 @@ function ApplicantDetails() {
             }
           );
 
+        toast.success(
+          res.data.message
+        );
+
         setStatus(newStatus);
 
-        toast.success(
-          res.data.message
-        );
-
       } catch (error) {
 
         console.log(error);
@@ -162,125 +135,8 @@ function ApplicantDetails() {
         toast.error(
           error?.response?.data
             ?.message ||
-            "Status update failed"
+            "Failed to update status"
         );
-
-      } finally {
-
-        setActionLoading(false);
-
-      }
-
-    };
-
-  // =========================
-  // DELETE APPLICATION
-  // =========================
-
-  const deleteApplication =
-    async () => {
-
-      if (
-        status === "Accepted" ||
-        status === "Rejected" ||
-        status === "Deleted"
-      ) {
-
-        return toast.error(
-          `Application already ${status}`
-        );
-
-      }
-
-      try {
-
-        setActionLoading(true);
-
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const res =
-          await axios.delete(
-            `http://localhost:5002/api/application/delete/${id}`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        setStatus("Deleted");
-
-        toast.success(
-          res.data.message
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-        toast.error(
-          error?.response?.data
-            ?.message ||
-            "Delete failed"
-        );
-
-      } finally {
-
-        setActionLoading(false);
-
-      }
-
-    };
-
-  // =========================
-  // INTERVIEW INVITE
-  // =========================
-
-  const sendInterviewInvite =
-    async () => {
-
-      try {
-
-        setActionLoading(true);
-
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const res =
-          await axios.post(
-            `http://localhost:5002/api/application/interview/${id}`,
-            {},
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        toast.success(
-          res.data.message
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-        toast.error(
-          error?.response?.data
-            ?.message ||
-            "Interview invite failed"
-        );
-
-      } finally {
-
-        setActionLoading(false);
 
       }
 
@@ -293,136 +149,452 @@ function ApplicantDetails() {
   if (loading) {
 
     return (
-      <div className="min-h-screen bg-[#050816] flex items-center justify-center text-white text-3xl font-bold">
+
+      <div className="min-h-screen bg-[#050816] flex items-center justify-center text-white text-2xl">
+
         Loading...
+
       </div>
+
     );
 
   }
 
+  // =========================
+  // DATA
+  // =========================
+
+  const applicant =
+    application?.applicant;
+
+  const profileImage =
+    applicant?.profileImage
+      ? applicant.profileImage.startsWith(
+          "http"
+        )
+        ? applicant.profileImage
+        : `http://localhost:5002/uploads/${applicant.profileImage}`
+      : "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+  const resumeLink =
+    applicant?.resume
+      ? applicant.resume.startsWith(
+          "http"
+        )
+        ? applicant.resume
+        : `http://localhost:5002/uploads/${applicant.resume}`
+      : "";
+
   return (
-    <div className="min-h-screen bg-[#050816] text-white px-6 py-32 relative overflow-hidden">
 
-      {/* BG EFFECT */}
+    <div className="min-h-screen bg-[#050816] text-white pt-28 pb-16 px-4 md:px-8">
 
-      <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500/10 blur-3xl rounded-full"></div>
+      <div className="max-w-7xl mx-auto">
 
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/10 blur-3xl rounded-full"></div>
+        {/* ===================== */}
+        {/* TOP BAR */}
+        {/* ===================== */}
 
-      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-8">
 
-        {/* BACK BUTTON */}
+          <button
+            onClick={() =>
+              navigate(
+                "/recruiter/my-jobs"
+              )
+            }
+            className="w-fit flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 transition duration-300"
+          >
 
-        <motion.button
-          whileHover={{
-            scale: 1.05,
-          }}
-          whileTap={{
-            scale: 0.95,
-          }}
-          onClick={() =>
-            navigate(-1)
-          }
-          className="mb-8 flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/10 border border-white/10 hover:border-cyan-400/40 transition"
-        >
+            <FaArrowLeft />
 
-          <FaArrowLeft />
+            Back To My Jobs
 
-          Back
+          </button>
 
-        </motion.button>
+          <div
+            className={`px-5 py-2 rounded-full text-sm font-semibold w-fit ${
+              status === "Accepted"
+                ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                : status === "Rejected"
+                ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+            }`}
+          >
 
+            {status}
+
+          </div>
+
+        </div>
+
+        {/* ===================== */}
         {/* MAIN CARD */}
+        {/* ===================== */}
 
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 40,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.5,
-          }}
-          className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-2xl"
-        >
+        <div className="bg-white/5 border border-white/10 rounded-[35px] overflow-hidden backdrop-blur-xl shadow-2xl">
 
-          <div className="flex flex-col lg:flex-row gap-10">
+          {/* COVER */}
 
-            {/* LEFT */}
+          <div className="h-44 bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-purple-500/20"></div>
 
-            <div className="lg:w-1/3">
+          <div className="px-5 md:px-10 pb-10">
 
-              <div className="bg-[#0b1120] rounded-3xl p-6 border border-white/10">
+            <div className="flex flex-col xl:flex-row gap-10 -mt-24">
 
-                <img
-                  src={
-                    applicant
-                      ?.applicant
-                      ?.profileImage ||
-                    "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                  }
-                  alt="profile"
-                  className="w-40 h-40 rounded-full mx-auto object-cover border-4 border-cyan-400 shadow-2xl"
-                />
+              {/* ===================== */}
+              {/* LEFT SIDEBAR */}
+              {/* ===================== */}
 
-                <div className="text-center mt-6">
+              <div className="xl:w-[32%]">
 
-                  <h1 className="text-3xl font-bold">
+                <div className="bg-[#0b1120] border border-white/10 rounded-3xl p-7 text-center sticky top-28">
 
-                    {
-                      applicant
-                        ?.applicant
-                        ?.fullName
-                    }
+                  {/* IMAGE */}
+
+                  <img
+                    src={profileImage}
+                    alt="profile"
+                    className="w-44 h-44 rounded-full object-cover border-4 border-cyan-400 mx-auto shadow-2xl"
+                  />
+
+                  {/* NAME */}
+
+                  <h1 className="text-3xl font-black mt-6">
+
+                    {applicant?.fullName}
 
                   </h1>
 
-                  <p className="text-cyan-400 mt-2 font-medium">
+                  {/* HEADLINE */}
 
-                    Candidate
+                  <p className="text-cyan-400 mt-2 text-lg">
+
+                    {applicant?.headline ||
+                      "Candidate"}
+
+                  </p>
+
+                  {/* JOB */}
+
+                  <div className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
+
+                    <FaBriefcase />
+
+                    {
+                      application?.job
+                        ?.title
+                    }
+
+                  </div>
+
+                  {/* INFO */}
+
+                  <div className="mt-8 space-y-5 text-left">
+
+                    <div className="flex items-start gap-4 text-gray-300">
+
+                      <FaEnvelope className="text-cyan-400 mt-1" />
+
+                      <span className="break-all">
+
+                        {applicant?.email}
+
+                      </span>
+
+                    </div>
+
+                    <div className="flex items-start gap-4 text-gray-300">
+
+                      <FaPhone className="text-cyan-400 mt-1" />
+
+                      <span>
+
+                        {applicant?.phone ||
+                          "N/A"}
+
+                      </span>
+
+                    </div>
+
+                    <div className="flex items-start gap-4 text-gray-300">
+
+                      <FaMapMarkerAlt className="text-cyan-400 mt-1" />
+
+                      <span>
+
+                        {applicant?.location ||
+                          "N/A"}
+
+                      </span>
+
+                    </div>
+
+                    <div className="flex items-start gap-4 text-gray-300">
+
+                      <FaClock className="text-cyan-400 mt-1" />
+
+                      <span>
+
+                        {applicant?.experience ||
+                          "No Experience"}
+
+                      </span>
+
+                    </div>
+
+                    <div className="flex items-start gap-4 text-gray-300">
+
+                      <FaUserGraduate className="text-cyan-400 mt-1" />
+
+                      <span>
+
+                        {applicant?.education ||
+                          "No Education Added"}
+
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                  {/* ACTION BUTTONS */}
+
+                  <div className="mt-8 flex flex-col gap-4">
+
+                    <button
+                      onClick={() =>
+                        updateStatus(
+                          "Accepted"
+                        )
+                      }
+                      className="w-full py-3 rounded-2xl bg-green-500 hover:bg-green-600 transition font-semibold"
+                    >
+
+                      Accept Candidate
+
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        updateStatus(
+                          "Rejected"
+                        )
+                      }
+                      className="w-full py-3 rounded-2xl bg-red-500 hover:bg-red-600 transition font-semibold"
+                    >
+
+                      Reject Candidate
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* ===================== */}
+              {/* RIGHT CONTENT */}
+              {/* ===================== */}
+
+              <div className="xl:w-[68%] space-y-8">
+
+                {/* ABOUT */}
+
+                <div className="bg-[#0b1120] border border-white/10 rounded-3xl p-7">
+
+                  <h2 className="text-2xl font-bold mb-5 flex items-center gap-3">
+
+                    <FaUserTie className="text-cyan-400" />
+
+                    About Candidate
+
+                  </h2>
+
+                  <p className="text-gray-300 leading-8 text-[16px]">
+
+                    {applicant?.bio ||
+                      "No bio added yet"}
 
                   </p>
 
                 </div>
 
-                {/* STATUS */}
+                {/* SKILLS */}
 
-                <div className="mt-6 flex justify-center">
+                <div className="bg-[#0b1120] border border-white/10 rounded-3xl p-7">
 
-                  <span
-                    className={`px-5 py-2 rounded-full text-sm font-semibold ${
-                      status ===
-                      "Accepted"
-                        ? "bg-green-500/20 text-green-400"
-                        : status ===
-                          "Rejected"
-                        ? "bg-red-500/20 text-red-400"
-                        : status ===
-                          "Deleted"
-                        ? "bg-gray-500/20 text-gray-300"
-                        : "bg-yellow-500/20 text-yellow-400"
-                    }`}
-                  >
+                  <h2 className="text-2xl font-bold mb-5 flex items-center gap-3">
 
-                    {status}
+                    <FaCheckCircle className="text-cyan-400" />
 
-                  </span>
+                    Skills
+
+                  </h2>
+
+                  <div className="flex flex-wrap gap-4">
+
+                    {applicant?.skills &&
+                    applicant?.skills
+                      .length > 0 ? (
+
+                      applicant?.skills.map(
+                        (
+                          skill,
+                          index
+                        ) => (
+
+                          <span
+                            key={index}
+                            className="px-5 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 font-medium"
+                          >
+
+                            {skill}
+
+                          </span>
+
+                        )
+                      )
+
+                    ) : (
+
+                      <p className="text-gray-400">
+
+                        No skills added
+
+                      </p>
+
+                    )}
+
+                  </div>
 
                 </div>
 
-                {/* QUICK ACTION */}
+                {/* LINKS */}
 
-                <div className="mt-8">
+                <div className="bg-[#0b1120] border border-white/10 rounded-3xl p-7">
+
+                  <h2 className="text-2xl font-bold mb-5">
+
+                    Professional Links
+
+                  </h2>
+
+                  <div className="flex flex-wrap gap-4">
+
+                    {applicant?.portfolio && (
+
+                      <a
+                        href={
+                          applicant?.portfolio
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 transition flex items-center gap-3"
+                      >
+
+                        <FaGlobe />
+
+                        Portfolio
+
+                      </a>
+
+                    )}
+
+                    {applicant?.linkedin && (
+
+                      <a
+                        href={
+                          applicant?.linkedin
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-5 py-3 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center gap-3"
+                      >
+
+                        <FaLinkedin />
+
+                        LinkedIn
+
+                      </a>
+
+                    )}
+
+                    {applicant?.github && (
+
+                      <a
+                        href={
+                          applicant?.github
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-5 py-3 rounded-2xl bg-gray-500/10 hover:bg-gray-500/20 transition flex items-center gap-3"
+                      >
+
+                        <FaGithub />
+
+                        GitHub
+
+                      </a>
+
+                    )}
+
+                  </div>
+
+                </div>
+
+                {/* RESUME */}
+
+                {applicant?.resume && (
+
+                  <div className="bg-[#0b1120] border border-white/10 rounded-3xl p-7">
+
+                    <h2 className="text-2xl font-bold mb-5">
+
+                      Resume
+
+                    </h2>
+
+                    <div className="flex flex-wrap gap-4">
+
+                      <a
+                        href={resumeLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold flex items-center gap-3 hover:scale-105 transition"
+                      >
+
+                        <FaFilePdf />
+
+                        View Resume
+
+                      </a>
+
+                      <a
+                        href={resumeLink}
+                        download
+                        className="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 transition"
+                      >
+
+                        Download Resume
+
+                      </a>
+
+                    </div>
+
+                  </div>
+
+                )}
+
+                {/* FULL PROFILE */}
+
+                <div>
 
                   <Link
-                    to={`/candidate/profile/${applicant?.applicant?._id}`}
-                    className="w-full flex items-center justify-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition"
+                    to={`/candidate/profile/${applicant?._id}`}
+                    className="inline-block px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition duration-300"
                   >
-
-                    <FaEye />
 
                     View Full Profile
 
@@ -434,423 +606,16 @@ function ApplicantDetails() {
 
             </div>
 
-            {/* RIGHT */}
-
-            <div className="lg:w-2/3">
-
-              {/* INFO GRID */}
-
-              <div className="grid md:grid-cols-2 gap-5">
-
-                {/* EMAIL */}
-
-                <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center">
-
-                    <FaEnvelope className="text-cyan-400 text-xl" />
-
-                  </div>
-
-                  <div>
-
-                    <p className="text-gray-400 text-sm">
-                      Email
-                    </p>
-
-                    <h3 className="font-semibold break-all">
-
-                      {
-                        applicant
-                          ?.applicant
-                          ?.email
-                      }
-
-                    </h3>
-
-                  </div>
-
-                </div>
-
-                {/* PHONE */}
-
-                <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-
-                    <FaPhone className="text-blue-400 text-xl" />
-
-                  </div>
-
-                  <div>
-
-                    <p className="text-gray-400 text-sm">
-                      Phone
-                    </p>
-
-                    <h3 className="font-semibold">
-
-                      {
-                        applicant
-                          ?.applicant
-                          ?.phone ||
-                        "N/A"
-                      }
-
-                    </h3>
-
-                  </div>
-
-                </div>
-
-                {/* JOB */}
-
-                <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center">
-
-                    <FaBriefcase className="text-green-400 text-xl" />
-
-                  </div>
-
-                  <div>
-
-                    <p className="text-gray-400 text-sm">
-                      Applied Job
-                    </p>
-
-                    <h3 className="font-semibold">
-
-                      {
-                        applicant
-                          ?.job
-                          ?.title
-                      }
-
-                    </h3>
-
-                  </div>
-
-                </div>
-
-                {/* DATE */}
-
-                <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center">
-
-                    <FaUserTie className="text-purple-400 text-xl" />
-
-                  </div>
-
-                  <div>
-
-                    <p className="text-gray-400 text-sm">
-                      Applied Date
-                    </p>
-
-                    <h3 className="font-semibold">
-
-                      {new Date(
-                        applicant?.createdAt
-                      ).toLocaleDateString()}
-
-                    </h3>
-
-                  </div>
-
-                </div>
-
-                {/* LOCATION */}
-
-                <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-pink-500/10 flex items-center justify-center">
-
-                    <FaMapMarkerAlt className="text-pink-400 text-xl" />
-
-                  </div>
-
-                  <div>
-
-                    <p className="text-gray-400 text-sm">
-                      Location
-                    </p>
-
-                    <h3 className="font-semibold">
-
-                      {
-                        applicant
-                          ?.applicant
-                          ?.location ||
-                        "N/A"
-                      }
-
-                    </h3>
-
-                  </div>
-
-                </div>
-
-                {/* EXPERIENCE */}
-
-                <div className="bg-[#0b1120] rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center">
-
-                    <FaGraduationCap className="text-orange-400 text-xl" />
-
-                  </div>
-
-                  <div>
-
-                    <p className="text-gray-400 text-sm">
-                      Experience
-                    </p>
-
-                    <h3 className="font-semibold">
-
-                      {
-                        applicant
-                          ?.applicant
-                          ?.experience ||
-                        "N/A"
-                      }
-
-                    </h3>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* SKILLS */}
-
-              {applicant?.applicant
-                ?.skills && (
-
-                <div className="mt-8 bg-[#0b1120] rounded-3xl p-6 border border-white/10">
-
-                  <h2 className="text-2xl font-bold mb-5 flex items-center gap-3">
-
-                    <FaTools className="text-cyan-400" />
-
-                    Skills
-
-                  </h2>
-
-                  <div className="flex flex-wrap gap-3">
-
-                    {applicant?.applicant?.skills
-                      ?.split(",")
-                      ?.map(
-                        (
-                          skill,
-                          index
-                        ) => (
-                          <span
-                            key={index}
-                            className="px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300"
-                          >
-                            {skill}
-                          </span>
-                        )
-                      )}
-
-                  </div>
-
-                </div>
-              )}
-
-              {/* SOCIAL LINKS */}
-
-              <div className="flex flex-wrap gap-4 mt-8">
-
-                {applicant?.applicant
-                  ?.portfolio && (
-
-                  <a
-                    href={
-                      applicant
-                        ?.applicant
-                        ?.portfolio
-                    }
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-6 py-3 rounded-2xl bg-white/10 border border-white/10 flex items-center gap-3 hover:border-cyan-400/40 transition"
-                  >
-
-                    <FaGlobe />
-
-                    Portfolio
-
-                  </a>
-                )}
-
-                {applicant?.applicant
-                  ?.linkedin && (
-
-                  <a
-                    href={
-                      applicant
-                        ?.applicant
-                        ?.linkedin
-                    }
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-6 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-300 flex items-center gap-3"
-                  >
-
-                    <FaLinkedin />
-
-                    LinkedIn
-
-                  </a>
-                )}
-
-              </div>
-
-              {/* ACTIONS */}
-
-              <div className="flex flex-wrap gap-5 mt-10">
-
-                {/* RESUME */}
-
-                {applicant?.applicant
-                  ?.resume && (
-
-                  <>
-                    <a
-                      href={
-                        applicant
-                          ?.applicant
-                          ?.resume
-                      }
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-7 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 font-semibold flex items-center gap-3 shadow-xl"
-                    >
-
-                      <FaFilePdf />
-
-                      View Resume
-
-                    </a>
-
-                    <a
-                      href={
-                        applicant
-                          ?.applicant
-                          ?.resume
-                      }
-                      download
-                      className="px-7 py-4 rounded-2xl bg-white/10 border border-white/10 font-semibold flex items-center gap-3"
-                    >
-
-                      <FaDownload />
-
-                      Download CV
-
-                    </a>
-                  </>
-                )}
-
-                {/* ACCEPT */}
-
-                <button
-                  disabled={
-                    actionLoading ||
-                    status !== "Pending"
-                  }
-                  onClick={() =>
-                    updateStatus(
-                      "Accepted"
-                    )
-                  }
-                  className="px-7 py-4 rounded-2xl bg-green-500 text-white font-semibold flex items-center gap-3 disabled:opacity-50"
-                >
-
-                  <FaCheckCircle />
-
-                  Accept
-
-                </button>
-
-                {/* REJECT */}
-
-                <button
-                  disabled={
-                    actionLoading ||
-                    status !== "Pending"
-                  }
-                  onClick={() =>
-                    updateStatus(
-                      "Rejected"
-                    )
-                  }
-                  className="px-7 py-4 rounded-2xl bg-red-500 text-white font-semibold flex items-center gap-3 disabled:opacity-50"
-                >
-
-                  <FaTimesCircle />
-
-                  Reject
-
-                </button>
-
-                {/* DELETE */}
-
-                <button
-                  disabled={
-                    actionLoading ||
-                    status !== "Pending"
-                  }
-                  onClick={
-                    deleteApplication
-                  }
-                  className="px-7 py-4 rounded-2xl bg-gray-700 text-white font-semibold flex items-center gap-3 disabled:opacity-50"
-                >
-
-                  <FaTrash />
-
-                  Delete
-
-                </button>
-
-                {/* INTERVIEW */}
-
-                {status ===
-                  "Accepted" && (
-
-                  <button
-                    disabled={
-                      actionLoading
-                    }
-                    onClick={
-                      sendInterviewInvite
-                    }
-                    className="px-7 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold flex items-center gap-3"
-                  >
-
-                    <FaVideo />
-
-                    Conduct Interview
-
-                  </button>
-                )}
-
-              </div>
-
-            </div>
-
           </div>
 
-        </motion.div>
+        </div>
 
       </div>
 
     </div>
+
   );
+
 }
 
 export default ApplicantDetails;

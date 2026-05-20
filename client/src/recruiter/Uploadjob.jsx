@@ -15,6 +15,8 @@ import {
   FaBuilding,
   FaCode,
   FaUserTie,
+  FaArrowLeft,
+  FaRocket,
 } from "react-icons/fa";
 
 import { useNavigate } from "react-router-dom";
@@ -114,15 +116,81 @@ function UploadJob() {
 
   return (
 
-    <div className="min-h-screen bg-[#050816] text-white pt-32 pb-20 px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#050816] text-white pt-28 pb-20 px-4 md:px-6 relative overflow-hidden">
 
       {/* BG EFFECTS */}
 
-      <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500/10 blur-3xl rounded-full"></div>
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/10 blur-3xl rounded-full pointer-events-none"></div>
 
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/10 blur-3xl rounded-full"></div>
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-3xl rounded-full pointer-events-none"></div>
 
-      <div className="max-w-5xl mx-auto relative z-10">
+      <div className="max-w-6xl mx-auto relative z-10">
+
+        {/* TOP BAR */}
+
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5 mb-10">
+
+          {/* LEFT */}
+
+          <div>
+
+            <motion.h1
+              initial={{
+                opacity: 0,
+                y: 20,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              className="text-4xl md:text-6xl font-black leading-tight"
+            >
+
+              Create New{" "}
+
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+
+                Job
+
+              </span>
+
+            </motion.h1>
+
+            <p className="text-gray-400 mt-3 text-lg">
+
+              Publish professional job opportunities
+              and hire talented candidates faster.
+
+            </p>
+
+          </div>
+
+          {/* BACK BUTTON */}
+
+          <motion.button
+            whileHover={{
+              scale: 1.05,
+            }}
+            whileTap={{
+              scale: 0.95,
+            }}
+            onClick={() =>
+              navigate(
+                "/recruiter/dashboard"
+              )
+            }
+            className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-400 transition-all duration-300 backdrop-blur-xl font-semibold"
+          >
+
+            <FaArrowLeft />
+
+            Back to Dashboard
+
+          </motion.button>
+
+        </div>
+
+        {/* CARD */}
 
         <motion.div
           initial={{
@@ -136,32 +204,34 @@ function UploadJob() {
           transition={{
             duration: 0.5,
           }}
-          className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-3xl p-8 md:p-12 shadow-2xl"
+          className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[32px] p-6 md:p-12 shadow-[0_0_60px_rgba(0,255,255,0.08)]"
         >
 
-          {/* HEADER */}
+          {/* FORM HEADER */}
 
-          <div className="mb-10">
+          <div className="flex items-center gap-4 mb-10">
 
-            <h1 className="text-4xl md:text-5xl font-black">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-3xl shadow-2xl">
 
-              Upload
+              <FaRocket />
 
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+            </div>
 
-                {" "}
-                Job
+            <div>
 
-              </span>
+              <h2 className="text-3xl font-black">
 
-            </h1>
+                Job Information
 
-            <p className="text-gray-400 mt-4 text-lg">
+              </h2>
 
-              Create a professional job listing
-              and hire top candidates.
+              <p className="text-gray-400 mt-1">
 
-            </p>
+                Fill all required fields carefully.
+
+              </p>
+
+            </div>
 
           </div>
 
@@ -169,14 +239,14 @@ function UploadJob() {
 
           <form
             onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 gap-7"
           >
 
             {/* TITLE */}
 
             <div>
 
-              <label className="block mb-2 font-semibold">
+              <label className="block mb-3 font-semibold text-gray-200">
 
                 Job Title
 
@@ -184,7 +254,7 @@ function UploadJob() {
 
               <div className="relative">
 
-                <FaBriefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400" />
+                <FaBriefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 text-lg" />
 
                 <input
                   type="text"
@@ -193,7 +263,7 @@ function UploadJob() {
                   onChange={handleChange}
                   placeholder="Frontend Developer"
                   required
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                 />
 
               </div>
@@ -204,7 +274,7 @@ function UploadJob() {
 
             <div>
 
-              <label className="block mb-2 font-semibold">
+              <label className="block mb-3 font-semibold text-gray-200">
 
                 Company Name
 
@@ -212,7 +282,7 @@ function UploadJob() {
 
               <div className="relative">
 
-                <FaBuilding className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400" />
+                <FaBuilding className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 text-lg" />
 
                 <input
                   type="text"
@@ -221,7 +291,7 @@ function UploadJob() {
                   onChange={handleChange}
                   placeholder="Google"
                   required
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                 />
 
               </div>
@@ -232,7 +302,7 @@ function UploadJob() {
 
             <div>
 
-              <label className="block mb-2 font-semibold">
+              <label className="block mb-3 font-semibold text-gray-200">
 
                 Location
 
@@ -240,7 +310,7 @@ function UploadJob() {
 
               <div className="relative">
 
-                <FaMapMarkerAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400" />
+                <FaMapMarkerAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 text-lg" />
 
                 <input
                   type="text"
@@ -249,7 +319,7 @@ function UploadJob() {
                   onChange={handleChange}
                   placeholder="Delhi"
                   required
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                 />
 
               </div>
@@ -260,7 +330,7 @@ function UploadJob() {
 
             <div>
 
-              <label className="block mb-2 font-semibold">
+              <label className="block mb-3 font-semibold text-gray-200">
 
                 Salary
 
@@ -268,7 +338,7 @@ function UploadJob() {
 
               <div className="relative">
 
-                <FaMoneyBillWave className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400" />
+                <FaMoneyBillWave className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 text-lg" />
 
                 <input
                   type="text"
@@ -277,7 +347,7 @@ function UploadJob() {
                   onChange={handleChange}
                   placeholder="50000"
                   required
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                 />
 
               </div>
@@ -288,7 +358,7 @@ function UploadJob() {
 
             <div>
 
-              <label className="block mb-2 font-semibold">
+              <label className="block mb-3 font-semibold text-gray-200">
 
                 Job Type
 
@@ -296,13 +366,13 @@ function UploadJob() {
 
               <div className="relative">
 
-                <FaClock className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400" />
+                <FaClock className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 text-lg" />
 
                 <select
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                 >
 
                   <option className="bg-[#0b1120]">
@@ -331,7 +401,7 @@ function UploadJob() {
 
             <div>
 
-              <label className="block mb-2 font-semibold">
+              <label className="block mb-3 font-semibold text-gray-200">
 
                 Experience
 
@@ -339,7 +409,7 @@ function UploadJob() {
 
               <div className="relative">
 
-                <FaUserTie className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400" />
+                <FaUserTie className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 text-lg" />
 
                 <input
                   type="text"
@@ -348,7 +418,7 @@ function UploadJob() {
                   onChange={handleChange}
                   placeholder="2 Years"
                   required
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                 />
 
               </div>
@@ -359,15 +429,15 @@ function UploadJob() {
 
             <div className="md:col-span-2">
 
-              <label className="block mb-2 font-semibold">
+              <label className="block mb-3 font-semibold text-gray-200">
 
-                Skills
+                Required Skills
 
               </label>
 
               <div className="relative">
 
-                <FaCode className="absolute left-4 top-6 text-cyan-400" />
+                <FaCode className="absolute left-4 top-5 text-cyan-400 text-lg" />
 
                 <input
                   type="text"
@@ -375,7 +445,7 @@ function UploadJob() {
                   value={formData.skills}
                   onChange={handleChange}
                   placeholder="React, Node.js, MongoDB"
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                 />
 
               </div>
@@ -386,33 +456,57 @@ function UploadJob() {
 
             <div className="md:col-span-2">
 
-              <label className="block mb-2 font-semibold">
+              <label className="block mb-3 font-semibold text-gray-200">
 
-                Description
+                Job Description
 
               </label>
 
               <div className="relative">
 
-                <FaAlignLeft className="absolute left-4 top-6 text-cyan-400" />
+                <FaAlignLeft className="absolute left-4 top-5 text-cyan-400 text-lg" />
 
                 <textarea
-                  rows="7"
+                  rows="8"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Write complete job description..."
+                  placeholder="Write detailed job description, responsibilities, requirements, and benefits..."
                   required
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 resize-none"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 resize-none transition-all"
                 />
 
               </div>
 
             </div>
 
-            {/* BUTTON */}
+            {/* BUTTONS */}
 
-            <div className="md:col-span-2 mt-4">
+            <div className="md:col-span-2 flex flex-col md:flex-row gap-5 mt-4">
+
+              {/* CANCEL */}
+
+              <motion.button
+                whileHover={{
+                  scale: 1.02,
+                }}
+                whileTap={{
+                  scale: 0.98,
+                }}
+                type="button"
+                onClick={() =>
+                  navigate(
+                    "/recruiter/dashboard"
+                  )
+                }
+                className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 hover:border-red-400 transition-all font-bold text-lg"
+              >
+
+                Cancel
+
+              </motion.button>
+
+              {/* SUBMIT */}
 
               <motion.button
                 whileHover={{
@@ -423,12 +517,12 @@ function UploadJob() {
                 }}
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg shadow-2xl"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg shadow-2xl disabled:opacity-70"
               >
 
                 {loading
                   ? "Uploading Job..."
-                  : "Upload Job"}
+                  : "Publish Job"}
 
               </motion.button>
 
