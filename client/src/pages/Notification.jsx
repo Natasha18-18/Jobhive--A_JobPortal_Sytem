@@ -48,9 +48,8 @@ function Notifications() {
         setLoading(true);
 
         const { data } =
-          await API.get(
-            "/notifications"
-          );
+            await API.get("/notifications/my");
+
 
         setNotifications(
           data.notifications || []

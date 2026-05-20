@@ -5,6 +5,8 @@ import {
   Navigate,
 } from "react-router-dom";
 
+import { Toaster } from "react-hot-toast";
+
 import Navbar from "./components/NavBar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoutes";
@@ -16,7 +18,6 @@ import ProtectedRoute from "./components/ProtectedRoutes";
 import Home from "./pages/Home";
 import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetails";
-import ApplyJob from "./pages/ApplyJob";
 import Companies from "./pages/Companies";
 import Contact from "./pages/ContactUs";
 import About from "./pages/AboutUs";
@@ -29,6 +30,8 @@ import ChangePassword from "./pages/Password";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
+import AppliedJobs from "./pages/AppliedJobs";
+import CompanyDetail from "./pages/CompanyDetail";
 
 // =========================
 // RECRUITER PAGES
@@ -43,6 +46,8 @@ import RecruiterNotifications from "./recruiter/RecruiterNotification";
 import RecruiterMessages from "./recruiter/RecruiterMessage";
 import ApplicantDetails from "./recruiter/ApplicationDetail";
 import EditJob from "./recruiter/EditJob";
+import InterviewSchedule from "./recruiter/InterviewSchedule";
+import CandidateProfile from "./recruiter/CandidateProfile";
 
 function App() {
 
@@ -56,6 +61,21 @@ function App() {
 
   return (
     <BrowserRouter>
+
+      {/* TOASTER */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+
+          style: {
+            background: "#111827",
+            color: "#fff",
+            border: "1px solid #06b6d4",
+            padding: "14px",
+          },
+        }}
+      />
 
       {/* NAVBAR */}
       <Navbar />
@@ -114,9 +134,7 @@ function App() {
           element={<ForgotPassword />}
         />
 
-        {/* ========================= */}
         {/* USER ROUTES */}
-        {/* ========================= */}
 
         <Route
           path="/about"
@@ -146,15 +164,6 @@ function App() {
         />
 
         <Route
-          path="/apply-job/:id"
-          element={
-            <ProtectedRoute>
-              <ApplyJob />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
           path="/companies"
           element={
             <ProtectedRoute>
@@ -162,6 +171,11 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+  path="/applied-jobs"
+  element={<AppliedJobs />}
+/>
 
         <Route
           path="/contact"
@@ -226,9 +240,7 @@ function App() {
           }
         />
 
-        {/* ========================= */}
         {/* RECRUITER ROUTES */}
-        {/* ========================= */}
 
         <Route
           path="/recruiter/dashboard"
@@ -310,6 +322,21 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/recruiter/interview/:id"
+          element={<InterviewSchedule />}
+        />
+
+        <Route
+          path="/candidate/profile/:id"
+          element={<CandidateProfile />}
+        />
+
+        <Route
+  path="/company/:id"
+  element={<CompanyDetail/>}
+/>
 
       </Routes>
 

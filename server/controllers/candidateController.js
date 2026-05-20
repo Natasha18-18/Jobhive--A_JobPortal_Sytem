@@ -1,167 +1,108 @@
-import Candidate from "../models/Candidate.js";
+import Candidate from "../models/candidateModel.js";
 import User from "../models/User.js";
 
-// =========================
-// GET PROFILE
-// =========================
+export const createCandidateProfile = async (
+  req,
+  res
+) => {
+  try {
 
-export const getCandidateProfile =
-  async (req, res) => {
+    console.log(req.body);
 
-    try {
+    const {
+      userId,
+      fullName,
+      email,
+      phone,
+      role,
+      bio,
+      headline,
+      location,
+      experience,
+      education,
+      portfolio,
+      linkedin,
+      github,
+    } = req.body;
 
-      const candidate =
-        await Candidate.findOne({
-          userId: req.params.id,
-        });
-
-      if (!candidate) {
-
-        return res.status(404).json({
-          success: false,
-          message: "Candidate not found",
-        });
-
-      }
-
-      res.status(200).json({
-        success: true,
-        data: candidate,
-      });
-
-    } catch (error) {
-
-      res.status(500).json({
+    // REQUIRED
+    if (!userId) {
+      return res.status(400).json({
         success: false,
-        message: error.message,
+        message: "User ID is required",
       });
-
     }
 
-  };
+    // FILES
+    let profileImage = "";
+    let resume = "";
 
-// =========================
-// UPDATE PROFILE
-// =========================
-
-export const updateCandidateProfile =
-  async (req, res) => {
-
-    try {
-
-      const {
-        fullName,
-        email,
-        phone,
-        bio,
-        portfolio,
-        linkedin,
-        github,
-        skills,
-      } = req.body;
-
-      // =========================
-      // PROFILE IMAGE
-      // =========================
-
-      let profileImage = "";
-
-      if (req.files?.profileImage) {
-
-        profileImage =
-          req.files.profileImage[0].filename;
-
-      }
-
-      // =========================
-      // FIND USER
-      // =========================
-
-      const user =
-        await User.findById(
-          req.params.id
-        );
-
-      if (!user) {
-
-        return res.status(404).json({
-          success: false,
-          message: "User not found",
-        });
-
-      }
-
-      // =========================
-      // UPDATE USER TABLE
-      // =========================
-
-      user.fullName = fullName;
-      user.email = email;
-      user.phone = phone;
-
-      await user.save();
-
-      // =========================
-      // UPDATE DATA
-      // =========================
-
-      const updateData = {
-        fullName,
-        email,
-        phone,
-        bio,
-        portfolio,
-        linkedin,
-        github,
-        skills: skills
-          ? JSON.parse(skills)
-          : [],
-      };
-
-      // =========================
-      // ADD PROFILE IMAGE
-      // =========================
-
-      if (profileImage) {
-
-        updateData.profileImage =
-          profileImage;
-
-      }
-
-      // =========================
-      // UPDATE CANDIDATE TABLE
-      // =========================
-
-      const candidate =
-        await Candidate.findOneAndUpdate(
-          {
-            userId: req.params.id,
-          },
-          updateData,
-          {
-            new: true,
-          }
-        );
-
-      // =========================
-      // RESPONSE
-      // =========================
-
-      res.status(200).json({
-        success: true,
-        message:
-          "Profile Updated Successfully",
-        data: candidate,
-      });
-
-    } catch (error) {
-
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
-
+    if (req.files?.profileImage) {
+      profileImage =
+        req.files.profileImage[0].filename;
     }
 
-  };
+    if (req.files?.resume) {
+      resume =
+        req.files.resume[0].filename;
+    }
+
+    // SKILLS
+    let skills = [];
+
+    if (req.body.skills) {
+      skills = JSON.parse(
+        req.body.skills
+      );
+    }
+
+    // UPDATE USER
+    const updatedUser =
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          fullName,
+          email,
+          phone,
+          role,
+          bio,
+          headline,
+          location,
+          experience,
+          education,
+          portfolio,
+          linkedin,
+          github,
+          skills,
+
+          ...(profileImage && {
+            profileImage,
+          }),
+
+          ...(resume && {
+            resume,
+          }),
+        },
+        {
+          returnDocument: "after",
+        }
+      ).select("-password");
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Profile updated successfully",
+      data: updatedUser,
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};

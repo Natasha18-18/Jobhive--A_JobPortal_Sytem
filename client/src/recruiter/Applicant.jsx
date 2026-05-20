@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import axios from "axios";
 
 import toast from "react-hot-toast";
-
-import { useParams } from "react-router-dom";
 
 import {
   motion,
@@ -20,14 +18,14 @@ import {
   FaTimesCircle,
   FaTrash,
   FaSpinner,
+  FaVideo,
+  FaPhone,
+  FaFilePdf,
 } from "react-icons/fa";
 
 function Applicants() {
 
   const navigate = useNavigate();
-  // =========================
-  // PARAMS
-  // =========================
 
   const { id } = useParams();
 
@@ -41,6 +39,9 @@ function Applicants() {
   const [loading, setLoading] =
     useState(true);
 
+  const [actionLoading, setActionLoading] =
+    useState("");
+
   // =========================
   // FETCH APPLICANTS
   // =========================
@@ -49,7 +50,7 @@ function Applicants() {
 
     fetchApplicants();
 
-  }, []);
+  }, [id]);
 
   const fetchApplicants = async () => {
 
@@ -100,10 +101,25 @@ function Applicants() {
 
   const updateStatus = async (
     applicationId,
-    status
+    currentStatus,
+    newStatus
   ) => {
 
+    if (
+      currentStatus === "Accepted" ||
+      currentStatus === "Rejected" ||
+      currentStatus === "Deleted"
+    ) {
+
+      return toast.error(
+        `Application already ${currentStatus}`
+      );
+
+    }
+
     try {
+
+      setActionLoading(applicationId);
 
       const token =
         localStorage.getItem(
@@ -113,7 +129,9 @@ function Applicants() {
       const response =
         await axios.put(
           `http://localhost:5002/api/application/status/${applicationId}`,
-          { status },
+          {
+            status: newStatus,
+          },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -130,7 +148,7 @@ function Applicants() {
           app._id === applicationId
             ? {
                 ...app,
-                status,
+                status: newStatus,
               }
             : app
         )
@@ -146,6 +164,10 @@ function Applicants() {
           "Status update failed"
       );
 
+    } finally {
+
+      setActionLoading("");
+
     }
 
   };
@@ -155,7 +177,22 @@ function Applicants() {
   // =========================
 
   const deleteApplication =
-    async (applicationId) => {
+    async (
+      applicationId,
+      currentStatus
+    ) => {
+
+      if (
+        currentStatus === "Accepted" ||
+        currentStatus === "Rejected" ||
+        currentStatus === "Deleted"
+      ) {
+
+        return toast.error(
+          `Application already ${currentStatus}`
+        );
+
+      }
 
       const confirmDelete =
         window.confirm(
@@ -165,6 +202,8 @@ function Applicants() {
       if (!confirmDelete) return;
 
       try {
+
+        setActionLoading(applicationId);
 
         const token =
           localStorage.getItem(
@@ -186,10 +225,13 @@ function Applicants() {
         );
 
         setApplications((prev) =>
-          prev.filter(
-            (app) =>
-              app._id !==
-              applicationId
+          prev.map((app) =>
+            app._id === applicationId
+              ? {
+                  ...app,
+                  status: "Deleted",
+                }
+              : app
           )
         );
 
@@ -203,15 +245,45 @@ function Applicants() {
             "Delete failed"
         );
 
+      } finally {
+
+        setActionLoading("");
+
       }
 
     };
+
+  // =========================
+  // STATUS STYLE
+  // =========================
+
+  const getStatusStyle = (
+    status
+  ) => {
+
+    switch (status) {
+
+      case "Accepted":
+        return "bg-green-500/20 text-green-400 border border-green-500/20";
+
+      case "Rejected":
+        return "bg-red-500/20 text-red-400 border border-red-500/20";
+
+      case "Deleted":
+        return "bg-gray-500/20 text-gray-300 border border-gray-500/20";
+
+      default:
+        return "bg-yellow-500/20 text-yellow-400 border border-yellow-500/20";
+
+    }
+
+  };
 
   return (
 
     <div className="min-h-screen bg-[#050816] text-white pt-32 pb-20 px-6">
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
 
@@ -224,26 +296,42 @@ function Applicants() {
             opacity: 1,
             y: 0,
           }}
+          className="flex items-center justify-between flex-wrap gap-5"
         >
 
-          <h1 className="text-5xl font-black">
+          <div>
 
-            Job
+            <h1 className="text-5xl font-black">
 
-            <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              Job
 
-              {" "}
-              Applicants
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
 
-            </span>
+                {" "}
+                Applicants
 
-          </h1>
+              </span>
 
-          <p className="text-gray-400 mt-3 text-lg">
+            </h1>
 
-            Manage candidates who applied.
+            <p className="text-gray-400 mt-3 text-lg">
 
-          </p>
+              Manage all job applicants
+
+            </p>
+
+          </div>
+
+          <button
+            onClick={() =>
+              navigate(-1)
+            }
+            className="px-6 py-3 rounded-2xl bg-white/10 border border-white/10 hover:border-cyan-400/40 transition"
+          >
+
+            Back
+
+          </button>
 
         </motion.div>
 
@@ -320,44 +408,68 @@ function Applicants() {
                             index * 0.1,
                         }}
                         whileHover={{
-                          y: -8,
+                          y: -5,
                         }}
                         className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-2xl shadow-2xl relative overflow-hidden"
                       >
 
-                        {/* GLOW */}
-
                         <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/10 blur-3xl rounded-full"></div>
-
-                        {/* USER */}
 
                         <div className="relative z-10">
 
-                          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-3xl shadow-2xl">
+                          {/* PROFILE */}
 
-                            <FaUser />
+                          <div className="flex items-center gap-5">
 
-                          </div>
+                            <img
+                              src={
+                                application
+                                  ?.applicant
+                                  ?.profileImage ||
+                                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                              }
+                              alt=""
+                              className="w-20 h-20 rounded-full object-cover border-2 border-cyan-400"
+                            />
 
-                          <h2 className="text-2xl font-black mt-6">
+                            <div>
 
-                            {
-                              application
-                                ?.applicant
-                                ?.fullName
-                            }
+                              <h2 className="text-2xl font-black">
 
-                          </h2>
+                                {
+                                  application
+                                    ?.applicant
+                                    ?.fullName
+                                }
 
-                          <div className="flex items-center gap-3 text-gray-400 mt-3">
+                              </h2>
 
-                            <FaEnvelope />
+                              <div className="flex items-center gap-2 text-gray-400 mt-2">
 
-                            {
-                              application
-                                ?.applicant
-                                ?.email
-                            }
+                                <FaEnvelope />
+
+                                {
+                                  application
+                                    ?.applicant
+                                    ?.email
+                                }
+
+                              </div>
+
+                              <div className="flex items-center gap-2 text-gray-400 mt-2">
+
+                                <FaPhone />
+
+                                {
+                                  application
+                                    ?.applicant
+                                    ?.phone ||
+                                  "N/A"
+                                }
+
+                              </div>
+
+                            </div>
 
                           </div>
 
@@ -366,15 +478,9 @@ function Applicants() {
                           <div className="mt-6">
 
                             <span
-                              className={`px-5 py-2 rounded-full text-sm font-bold ${
-                                application.status ===
-                                "Accepted"
-                                  ? "bg-green-500/20 text-green-400"
-                                  : application.status ===
-                                    "Rejected"
-                                  ? "bg-red-500/20 text-red-400"
-                                  : "bg-yellow-500/20 text-yellow-400"
-                              }`}
+                              className={`px-5 py-2 rounded-full text-sm font-bold ${getStatusStyle(
+                                application.status
+                              )}`}
                             >
 
                               {
@@ -385,9 +491,56 @@ function Applicants() {
 
                           </div>
 
-                          {/* BUTTONS */}
+                          {/* ACTIONS */}
 
                           <div className="flex flex-wrap gap-4 mt-8">
+
+                            {/* VIEW PROFILE */}
+
+                            <motion.button
+                              whileHover={{
+                                scale: 1.05,
+                              }}
+                              whileTap={{
+                                scale: 0.95,
+                              }}
+                              onClick={() =>
+                                navigate(
+                                  `/candidate/profile/${application?.applicant?._id}`
+                                )
+                              }
+                              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition font-semibold"
+                            >
+
+                              <FaUser />
+
+                              View Profile
+
+                            </motion.button>
+
+                            {/* RESUME */}
+
+                            {application
+                              ?.applicant
+                              ?.resume && (
+
+                              <a
+                                href={
+                                  application
+                                    ?.applicant
+                                    ?.resume
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 hover:bg-purple-500/20 transition font-semibold"
+                              >
+
+                                <FaFilePdf />
+
+                                Resume
+
+                              </a>
+                            )}
 
                             {/* ACCEPT */}
 
@@ -398,13 +551,20 @@ function Applicants() {
                               whileTap={{
                                 scale: 0.95,
                               }}
+                              disabled={
+                                actionLoading ===
+                                  application._id ||
+                                application.status !==
+                                  "Pending"
+                              }
                               onClick={() =>
                                 updateStatus(
                                   application._id,
+                                  application.status,
                                   "Accepted"
                                 )
                               }
-                              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 transition font-semibold"
+                              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 transition font-semibold disabled:opacity-50"
                             >
 
                               <FaCheckCircle />
@@ -422,13 +582,20 @@ function Applicants() {
                               whileTap={{
                                 scale: 0.95,
                               }}
+                              disabled={
+                                actionLoading ===
+                                  application._id ||
+                                application.status !==
+                                  "Pending"
+                              }
                               onClick={() =>
                                 updateStatus(
                                   application._id,
+                                  application.status,
                                   "Rejected"
                                 )
                               }
-                              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition font-semibold"
+                              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition font-semibold disabled:opacity-50"
                             >
 
                               <FaTimesCircle />
@@ -446,12 +613,19 @@ function Applicants() {
                               whileTap={{
                                 scale: 0.95,
                               }}
+                              disabled={
+                                actionLoading ===
+                                  application._id ||
+                                application.status !==
+                                  "Pending"
+                              }
                               onClick={() =>
                                 deleteApplication(
-                                  application._id
+                                  application._id,
+                                  application.status
                                 )
                               }
-                              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 border border-white/10 hover:border-red-500 transition font-semibold"
+                              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gray-500/10 border border-gray-500/20 text-gray-300 hover:bg-gray-500/20 transition font-semibold disabled:opacity-50"
                             >
 
                               <FaTrash />
@@ -459,6 +633,33 @@ function Applicants() {
                               Delete
 
                             </motion.button>
+
+                            {/* INTERVIEW */}
+
+                            {application.status ===
+                              "Accepted" && (
+
+                              <motion.button
+                                whileHover={{
+                                  scale: 1.05,
+                                }}
+                                whileTap={{
+                                  scale: 0.95,
+                                }}
+                                onClick={() =>
+                                  navigate(
+                                    `/recruiter/interview/${application._id}`
+                                  )
+                                }
+                                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white transition font-semibold"
+                              >
+
+                                <FaVideo />
+
+                                Conduct Interview
+
+                              </motion.button>
+                            )}
 
                           </div>
 

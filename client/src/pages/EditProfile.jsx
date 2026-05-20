@@ -35,68 +35,135 @@ function EditProfile() {
   // FORM STATES
   // =========================
 
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    role: "",
-    bio: "",
-    portfolio: "",
-    linkedin: "",
-    github: "",
-    profileImage:"",
-  });
+  const [formData, setFormData] =
+    useState({
+      userId: "",
+
+      fullName: "",
+      email: "",
+      phone: "",
+      role: "",
+      bio: "",
+
+      headline: "",
+      location: "",
+      experience: "",
+      education: "",
+
+      portfolio: "",
+      linkedin: "",
+      github: "",
+
+      profileImage: "",
+    });
 
   const [profileImage, setProfileImage] =
     useState(null);
 
-  const [resume, setResume] = useState(null);
+  const [resume, setResume] =
+    useState(null);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
   // =========================
   // SKILLS
   // =========================
 
-  const [skills, setSkills] = useState([]);
+  const [skills, setSkills] =
+    useState([]);
 
   const [skillInput, setSkillInput] =
     useState("");
 
   // =========================
-  // FETCH EXISTING PROFILE
+  // FETCH PROFILE
   // =========================
 
   useEffect(() => {
 
-    fetchProfile();
+    if (user?._id) {
+
+      fetchProfile();
+
+    }
 
   }, []);
 
   const fetchProfile = async () => {
+
     try {
 
-      const res = await axios.get(
-        `http://localhost:5002/api/candidate/${user._id}`
-      );
+      const token =
+        localStorage.getItem(
+          "token"
+        );
+
+      const res =
+        await axios.get(
+          `http://localhost:5002/api/candidate/${user._id}`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
 
       if (res.data.success) {
 
-        const profile = res.data.data;
+        const profile =
+          res.data.data;
 
-setFormData({
-  fullName: profile.fullName || "",
-  email: profile.email || "",
-  phone: profile.phone || "",
-  role: profile.role || "",
-  bio: profile.bio || "",
-  portfolio: profile.portfolio || "",
-  linkedin: profile.linkedin || "",
-  github: profile.github || "",
-  profileImage: profile.profileImage || "",
-});
+        setFormData({
+          userId:
+            profile.userId ||
+            user._id,
 
-        setSkills(profile.skills || []);
+          fullName:
+            profile.fullName || "",
+
+          email:
+            profile.email || "",
+
+          phone:
+            profile.phone || "",
+
+          role:
+            profile.role || "",
+
+          bio:
+            profile.bio || "",
+
+          headline:
+            profile.headline || "",
+
+          location:
+            profile.location || "",
+
+          experience:
+            profile.experience || "",
+
+          education:
+            profile.education || "",
+
+          portfolio:
+            profile.portfolio || "",
+
+          linkedin:
+            profile.linkedin || "",
+
+          github:
+            profile.github || "",
+
+          profileImage:
+            profile.profileImage || "",
+        });
+
+        setSkills(
+          profile.skills || []
+        );
+
       }
 
     } catch (error) {
@@ -104,6 +171,22 @@ setFormData({
       console.log(error);
 
     }
+
+  };
+
+  // =========================
+  // HANDLE CHANGE
+  // =========================
+
+  const handleChange = (e) => {
+
+    setFormData({
+      ...formData,
+
+      [e.target.name]:
+        e.target.value,
+    });
+
   };
 
   // =========================
@@ -112,7 +195,9 @@ setFormData({
 
   const addSkill = () => {
 
-    if (skillInput.trim() !== "") {
+    if (
+      skillInput.trim() !== ""
+    ) {
 
       setSkills([
         ...skills,
@@ -120,264 +205,282 @@ setFormData({
       ]);
 
       setSkillInput("");
+
     }
+
   };
 
   // =========================
   // REMOVE SKILL
   // =========================
 
-  const removeSkill = (index) => {
+  const removeSkill = (
+    index
+  ) => {
 
-    const updated = skills.filter(
-      (_, i) => i !== index
-    );
+    const updated =
+      skills.filter(
+        (_, i) => i !== index
+      );
 
     setSkills(updated);
-  };
 
-  // =========================
-  // HANDLE INPUT
-  // =========================
-
-  const handleChange = (e) => {
-
-    setFormData({
-      ...formData,
-
-      [e.target.name]: e.target.value,
-    });
   };
 
   // =========================
   // SUBMIT
   // =========================
 
-  const handleSubmit = async () => {
-    try {
+  const handleSubmit =
+    async () => {
 
-      setLoading(true);
+      try {
 
-      const data = new FormData();
+        setLoading(true);
 
-      // USER ID
-      data.append("userId", user._id);
+        const token =
+          localStorage.getItem(
+            "token"
+          );
 
-      // TEXT DATA
-      Object.keys(formData).forEach((key) => {
+        const data =
+          new FormData();
 
+        // IMPORTANT
         data.append(
-          key,
-          formData[key]
+          "userId",
+          user._id
         );
 
-      });
+        // =========================
+        // TEXT DATA
+        // =========================
 
-      // SKILLS
-      data.append(
-        "skills",
-        JSON.stringify(skills)
-      );
+        Object.keys(
+          formData
+        ).forEach((key) => {
 
-      // RESUME
-      if (resume) {
+          if (
+            key !== "profileImage"
+          ) {
+
+            data.append(
+              key,
+              formData[key]
+            );
+
+          }
+
+        });
+
+        // =========================
+        // SKILLS
+        // =========================
 
         data.append(
-          "resume",
-          resume
+          "skills",
+          JSON.stringify(
+            skills
+          )
         );
-      }
 
-      // PROFILE IMAGE
-      if (profileImage) {
+        // =========================
+        // PROFILE IMAGE
+        // =========================
 
-        data.append(
-          "profileImage",
-          profileImage
-        );
-      }
-      
-      console.log([...data.entries()]);
+        if (profileImage) {
 
-      const res = await axios.post(
-        "http://localhost:5002/api/candidate/create",
-        data,
-        {
-          headers: {
-            "Content-Type":
-              "multipart/form-data",
-          },
+          data.append(
+            "profileImage",
+            profileImage
+          );
 
-          withCredentials: true,
         }
-      );
 
-if (res.data.success) {
+        // =========================
+        // RESUME
+        // =========================
 
-  // UPDATE LOCAL STORAGE
-  const updatedUser = {
-    ...user,
-    fullName: res.data.data.fullName,
-    email: res.data.data.email,
-    profileImage: res.data.data.profileImage,
-  };
+        if (resume) {
 
-  localStorage.setItem(
-    "user",
-    JSON.stringify(updatedUser)
-  );
+          data.append(
+            "resume",
+            resume
+          );
 
-  // CUSTOM EVENT TRIGGER
-  window.dispatchEvent(
-    new Event("profileUpdated")
-  );
+        }
 
-  alert(
-    "Profile Saved Successfully 🚀"
-  );
+        const res =
+          await axios.post(
+            "http://localhost:5002/api/candidate/create",
+            data,
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
 
-  navigate("/");
-}
+                "Content-Type":
+                  "multipart/form-data",
+              },
+            }
+          );
 
-    } catch (error) {
+        if (
+          res.data.success
+        ) {
 
-      console.log(error);
+          const updatedUser = {
+            ...user,
 
-      alert("Something went wrong");
+            fullName:
+              res.data.data
+                .fullName,
 
-    } finally {
+            email:
+              res.data.data
+                .email,
 
-      setLoading(false);
+            profileImage:
+              res.data.data
+                .profileImage,
+          };
 
-    }
-  };
+          localStorage.setItem(
+            "user",
+            JSON.stringify(
+              updatedUser
+            )
+          );
+
+          window.dispatchEvent(
+            new Event(
+              "profileUpdated"
+            )
+          );
+
+          alert(
+            "Profile Saved Successfully 🚀"
+          );
+
+          navigate("/");
+
+        }
+
+      } catch (error) {
+
+        console.log(error);
+
+        alert(
+          error?.response?.data
+            ?.message ||
+            "Something went wrong"
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
 
   return (
-    <>
-      <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#050816] via-[#0b1120] to-[#111827] pt-32 pb-20 px-6">
 
-        {/* BG */}
-        <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-blue-600/20 blur-3xl rounded-full"></div>
+    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#050816] via-[#0b1120] to-[#111827] pt-32 pb-20 px-6">
 
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-cyan-500/10 blur-3xl rounded-full"></div>
+      {/* BG */}
 
-        <div className="max-w-7xl mx-auto relative z-10">
+      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-blue-600/20 blur-3xl rounded-full"></div>
 
-          {/* HEADING */}
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-cyan-500/10 blur-3xl rounded-full"></div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
+
+        {/* HEADING */}
+
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 40,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          className="text-center mb-14"
+        >
+
+          <h1 className="text-5xl font-black text-white">
+
+            Edit Your Profile
+
+          </h1>
+
+          <p className="mt-4 text-gray-400 text-lg">
+
+            Update your profile and stand out to recruiters
+
+          </p>
+
+        </motion.div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+
+          {/* LEFT */}
+
           <motion.div
             initial={{
               opacity: 0,
-              y: 40,
+              x: -30,
             }}
             animate={{
               opacity: 1,
-              y: 0,
+              x: 0,
             }}
-            className="text-center mb-14"
+            className="bg-white/5 border border-white/10 rounded-[35px] p-8 backdrop-blur-2xl h-fit"
           >
 
-            <h1 className="text-5xl font-black text-white">
-              Edit Your Profile
-            </h1>
+            {/* PROFILE IMAGE */}
 
-            <p className="mt-4 text-gray-400 text-lg">
-              Update your profile and stand out to recruiters
-            </p>
+            <div className="flex flex-col items-center">
 
-          </motion.div>
+              <div className="relative">
 
-          <div className="grid lg:grid-cols-3 gap-8">
+                {profileImage ? (
 
-            {/* LEFT */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                x: -30,
-              }}
-              animate={{
-                opacity: 1,
-                x: 0,
-              }}
-              className="bg-white/5 border border-white/10 rounded-[35px] p-8 backdrop-blur-2xl h-fit"
-            >
+                  <img
+                    src={URL.createObjectURL(profileImage)}
+                    alt="profile"
+                    className="w-36 h-36 rounded-full object-cover border-4 border-cyan-500"
+                  />
 
-              {/* PROFILE IMAGE */}
-              <div className="flex flex-col items-center">
+                ) : formData.profileImage ? (
 
-                <div className="relative">
+                  <img
+                    src={`http://localhost:5002/uploads/${formData.profileImage}`}
+                    alt="profile"
+                    className="w-36 h-36 rounded-full object-cover border-4 border-cyan-500"
+                  />
 
-                  {profileImage ? (
-  <img
-    src={URL.createObjectURL(profileImage)}
-    alt="profile"
-    className="w-36 h-36 rounded-full object-cover border-4 border-cyan-500"
-  />
-) : formData.profileImage ? (
-  <img
-    src={`http://localhost:5002/uploads/${formData.profileImage}`}
-    alt="profile"
-    className="w-36 h-36 rounded-full object-cover border-4 border-cyan-500"
-  />
-) : (
-                    <div className="w-36 h-36 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-7xl shadow-2xl">
-                      <FaUserCircle />
-                    </div>
-                  )}
+                ) : (
 
-                  <label className="absolute bottom-2 right-2 w-12 h-12 rounded-full bg-cyan-500 flex items-center justify-center text-white cursor-pointer shadow-xl">
+                  <div className="w-36 h-36 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-7xl shadow-2xl">
 
-                    <FaCamera />
+                    <FaUserCircle />
 
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={(e) =>
-                        setProfileImage(
-                          e.target.files[0]
-                        )
-                      }
-                    />
+                  </div>
 
-                  </label>
+                )}
 
-                </div>
+                <label className="absolute bottom-2 right-2 w-12 h-12 rounded-full bg-cyan-500 flex items-center justify-center text-white cursor-pointer shadow-xl">
 
-                <h2 className="mt-6 text-2xl font-bold text-white">
-
-                  {formData.fullName ||
-                    "Your Name"}
-
-                </h2>
-
-                <p className="text-cyan-400 mt-1">
-
-                  {formData.role ||
-                    "Frontend Developer"}
-
-                </p>
-
-              </div>
-
-              {/* RESUME */}
-              <div className="mt-10">
-
-                <h3 className="text-white font-semibold text-lg mb-4">
-                  Resume
-                </h3>
-
-                <label className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 py-4 rounded-2xl text-white font-semibold cursor-pointer shadow-xl">
-
-                  <FaFileUpload />
-
-                  {resume
-                    ? resume.name
-                    : "Upload Resume"}
+                  <FaCamera />
 
                   <input
                     type="file"
                     className="hidden"
                     onChange={(e) =>
-                      setResume(
+                      setProfileImage(
                         e.target.files[0]
                       )
                     }
@@ -387,140 +490,228 @@ if (res.data.success) {
 
               </div>
 
-              {/* QUICK INFO */}
-              <div className="mt-10 space-y-5">
+              <h2 className="mt-6 text-2xl font-bold text-white">
 
-                <div className="flex items-center gap-4 text-gray-300">
+                {formData.fullName ||
+                  "Your Name"}
 
-                  <FaMapMarkerAlt className="text-cyan-400" />
+              </h2>
 
-                  Haryana, India
+              <p className="text-cyan-400 mt-1">
 
-                </div>
+                {formData.headline ||
+                  "Frontend Developer"}
 
-                <div className="flex items-center gap-4 text-gray-300">
+              </p>
 
-                  <FaBriefcase className="text-cyan-400" />
+            </div>
 
-                  Experience
+            {/* RESUME */}
 
-                </div>
+            <div className="mt-10">
 
-                <div className="flex items-center gap-4 text-gray-300">
+              <h3 className="text-white font-semibold text-lg mb-4">
 
-                  <FaGraduationCap className="text-cyan-400" />
+                Resume
 
-                  Education
+              </h3>
 
-                </div>
+              <label className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-500 py-4 rounded-2xl text-white font-semibold cursor-pointer shadow-xl">
+
+                <FaFileUpload />
+
+                {resume
+                  ? resume.name
+                  : "Upload Resume"}
+
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) =>
+                    setResume(
+                      e.target.files[0]
+                    )
+                  }
+                />
+
+              </label>
+
+            </div>
+
+            {/* QUICK INFO */}
+
+            <div className="mt-10 space-y-5">
+
+              <div className="flex items-center gap-4 text-gray-300">
+
+                <FaMapMarkerAlt className="text-cyan-400" />
+
+                {formData.location ||
+                  "Location"}
 
               </div>
 
-            </motion.div>
+              <div className="flex items-center gap-4 text-gray-300">
 
-            {/* RIGHT */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                x: 30,
-              }}
-              animate={{
-                opacity: 1,
-                x: 0,
-              }}
-              className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[35px] p-8 backdrop-blur-2xl"
-            >
+                <FaBriefcase className="text-cyan-400" />
 
-              {/* BASIC INFO */}
-              <div>
+                {formData.experience ||
+                  "Experience"}
 
-                <h2 className="text-3xl font-bold text-white mb-8">
-                  Basic Information
-                </h2>
+              </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+              <div className="flex items-center gap-4 text-gray-300">
 
-                  {[
-                    "fullName",
-                    "email",
-                    "phone",
-                    "role",
-                  ].map((field, index) => (
+                <FaGraduationCap className="text-cyan-400" />
+
+                {formData.education ||
+                  "Education"}
+
+              </div>
+
+            </div>
+
+          </motion.div>
+
+          {/* RIGHT */}
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              x: 30,
+            }}
+            animate={{
+              opacity: 1,
+              x: 0,
+            }}
+            className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[35px] p-8 backdrop-blur-2xl"
+          >
+
+            {/* BASIC INFO */}
+
+            <div>
+
+              <h2 className="text-3xl font-bold text-white mb-8">
+
+                Basic Information
+
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-6">
+
+                {[
+                  "fullName",
+                  "email",
+                  "phone",
+                  "role",
+                  "headline",
+                  "location",
+                  "experience",
+                  "education",
+                ].map(
+                  (
+                    field,
+                    index
+                  ) => (
+
                     <input
                       key={index}
                       type="text"
                       name={field}
                       placeholder={field}
                       value={
-                        formData[field]
+                        formData[
+                          field
+                        ]
                       }
                       onChange={
                         handleChange
                       }
                       className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400"
                     />
-                  ))}
 
-                </div>
-
-              </div>
-
-              {/* BIO */}
-              <div className="mt-12">
-
-                <h2 className="text-3xl font-bold text-white mb-6">
-                  Bio
-                </h2>
-
-                <textarea
-                  rows="6"
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleChange}
-                  placeholder="Write something about yourself..."
-                  className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400 resize-none"
-                ></textarea>
+                  )
+                )}
 
               </div>
 
-              {/* SOCIAL LINKS */}
-              <div className="mt-12">
+            </div>
 
-                <h2 className="text-3xl font-bold text-white mb-6">
-                  Social Links
-                </h2>
+            {/* BIO */}
 
-                <div className="space-y-5">
+            <div className="mt-12">
 
-                  {[
-                    {
-                      icon: <FaGlobe />,
-                      name: "portfolio",
-                      placeholder:
-                        "Portfolio Website",
-                    },
+              <h2 className="text-3xl font-bold text-white mb-6">
 
-                    {
-                      icon: <FaLinkedin />,
-                      name: "linkedin",
-                      placeholder:
-                        "LinkedIn Profile",
-                    },
+                Bio
 
-                    {
-                      icon: <FaGithub />,
-                      name: "github",
-                      placeholder:
-                        "GitHub Profile",
-                    },
-                  ].map((item, index) => (
+              </h2>
+
+              <textarea
+                rows="6"
+                name="bio"
+                value={formData.bio}
+                onChange={handleChange}
+                placeholder="Write something about yourself..."
+                className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400 resize-none"
+              ></textarea>
+
+            </div>
+
+            {/* SOCIAL LINKS */}
+
+            <div className="mt-12">
+
+              <h2 className="text-3xl font-bold text-white mb-6">
+
+                Social Links
+
+              </h2>
+
+              <div className="space-y-5">
+
+                {[
+                  {
+                    icon:
+                      <FaGlobe />,
+                    name:
+                      "portfolio",
+                    placeholder:
+                      "Portfolio Website",
+                  },
+
+                  {
+                    icon:
+                      <FaLinkedin />,
+                    name:
+                      "linkedin",
+                    placeholder:
+                      "LinkedIn Profile",
+                  },
+
+                  {
+                    icon:
+                      <FaGithub />,
+                    name:
+                      "github",
+                    placeholder:
+                      "GitHub Profile",
+                  },
+                ].map(
+                  (
+                    item,
+                    index
+                  ) => (
+
                     <div
                       key={index}
                       className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4"
                     >
 
                       <span className="text-cyan-400">
+
                         {item.icon}
+
                       </span>
 
                       <input
@@ -541,110 +732,120 @@ if (res.data.success) {
                       />
 
                     </div>
-                  ))}
 
-                </div>
+                  )
+                )}
 
               </div>
 
-              {/* SKILLS */}
-              <div className="mt-12">
+            </div>
 
-                <h2 className="text-3xl font-bold text-white mb-6">
-                  Skills
-                </h2>
+            {/* SKILLS */}
 
-                <div className="flex gap-4">
+            <div className="mt-12">
 
-                  <input
-                    type="text"
-                    value={skillInput}
-                    onChange={(e) =>
-                      setSkillInput(
-                        e.target.value
-                      )
-                    }
-                    placeholder="Add a skill"
-                    className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400"
-                  />
+              <h2 className="text-3xl font-bold text-white mb-6">
 
-                  <button
-                    onClick={addSkill}
-                    className="bg-gradient-to-r from-blue-600 to-cyan-500 px-6 rounded-2xl text-white text-xl shadow-xl"
-                  >
+                Skills
 
-                    <FaPlus />
+              </h2>
 
-                  </button>
+              <div className="flex gap-4">
 
-                </div>
+                <input
+                  type="text"
+                  value={skillInput}
+                  onChange={(e) =>
+                    setSkillInput(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Add a skill"
+                  className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400"
+                />
 
-                {/* SKILLS LIST */}
-                <div className="flex flex-wrap gap-4 mt-8">
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="bg-gradient-to-r from-blue-600 to-cyan-500 px-6 rounded-2xl text-white text-xl shadow-xl"
+                >
 
-                  {skills.map(
-                    (
-                      skill,
-                      index
-                    ) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-3 bg-cyan-500/10 border border-cyan-400/20 px-5 py-3 rounded-2xl text-cyan-300"
+                  <FaPlus />
+
+                </button>
+
+              </div>
+
+              <div className="flex flex-wrap gap-4 mt-8">
+
+                {skills.map(
+                  (
+                    skill,
+                    index
+                  ) => (
+
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 bg-cyan-500/10 border border-cyan-400/20 px-5 py-3 rounded-2xl text-cyan-300"
+                    >
+
+                      {skill}
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeSkill(
+                            index
+                          )
+                        }
+                        className="text-red-400 hover:text-red-500"
                       >
 
-                        {skill}
+                        <FaTrash />
 
-                        <button
-                          onClick={() =>
-                            removeSkill(
-                              index
-                            )
-                          }
-                          className="text-red-400 hover:text-red-500"
-                        >
+                      </button>
 
-                          <FaTrash />
+                    </div>
 
-                        </button>
-
-                      </div>
-                    )
-                  )}
-
-                </div>
+                  )
+                )}
 
               </div>
 
-              {/* SAVE */}
-              <motion.button
-                whileHover={{
-                  scale: 1.02,
-                }}
-                whileTap={{
-                  scale: 0.98,
-                }}
-                onClick={handleSubmit}
-                disabled={loading}
-                className="mt-14 w-full bg-gradient-to-r from-blue-600 to-cyan-500 py-5 rounded-2xl text-white font-bold text-lg shadow-2xl flex items-center justify-center gap-4"
-              >
+            </div>
 
-                <FaSave />
+            {/* SAVE */}
 
-                {loading
-                  ? "Saving..."
-                  : "Save Profile"}
+            <motion.button
+              whileHover={{
+                scale: 1.02,
+              }}
+              whileTap={{
+                scale: 0.98,
+              }}
+              onClick={handleSubmit}
+              disabled={loading}
+              className="mt-14 w-full bg-gradient-to-r from-blue-600 to-cyan-500 py-5 rounded-2xl text-white font-bold text-lg shadow-2xl flex items-center justify-center gap-4"
+            >
 
-              </motion.button>
+              <FaSave />
 
-            </motion.div>
+              {loading
+                ? "Saving..."
+                : "Save Profile"}
 
-          </div>
+            </motion.button>
+
+          </motion.div>
 
         </div>
 
-      </section>
-    </>
+      </div>
+
+    </section>
+
   );
+
 }
 
 export default EditProfile;

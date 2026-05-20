@@ -1,49 +1,35 @@
 import express from "express";
-
 import multer from "multer";
 
 import Candidate from "../models/Candidate.js";
-
 import User from "../models/User.js";
 
 const router = express.Router();
+
 
 // ======================
 // MULTER STORAGE
 // ======================
 
 const storage = multer.diskStorage({
-
-  destination: function (
-    req,
-    file,
-    cb
-  ) {
-
+  destination: function (req, file, cb) {
     cb(null, "uploads/");
-
   },
 
-  filename: function (
-    req,
-    file,
-    cb
-  ) {
-
+  filename: function (req, file, cb) {
     cb(
       null,
       Date.now() +
         "-" +
         file.originalname
     );
-
   },
-
 });
 
 const upload = multer({
   storage,
 });
+
 
 // ======================
 // CREATE / UPDATE PROFILE
@@ -64,170 +50,176 @@ router.post(
   ]),
 
   async (req, res) => {
-
     try {
 
-      const existingCandidate =
-        await Candidate.findOne({
-          userId:
-            req.body.userId,
+      const {
+        userId,
+        fullName,
+        email,
+        phone,
+        role,
+        bio,
+        headline,
+        location,
+        experience,
+        education,
+        portfolio,
+        linkedin,
+        github,
+      } = req.body;
+
+      // ======================
+      // CHECK USER ID
+      // ======================
+
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: "User ID is required",
         });
-
-      // ======================
-      // UPDATE PROFILE
-      // ======================
-
-      if (existingCandidate) {
-
-        existingCandidate.fullName =
-          req.body.fullName;
-
-        existingCandidate.email =
-          req.body.email;
-
-        existingCandidate.phone =
-          req.body.phone;
-
-        existingCandidate.role =
-          req.body.role;
-
-        existingCandidate.bio =
-          req.body.bio;
-
-        existingCandidate.portfolio =
-          req.body.portfolio;
-
-        existingCandidate.linkedin =
-          req.body.linkedin;
-
-        existingCandidate.github =
-          req.body.github;
-
-        existingCandidate.skills =
-          JSON.parse(
-            req.body.skills ||
-              "[]"
-          );
-
-        // KEEP OLD RESUME
-        if (
-          req.files?.resume
-        ) {
-
-          existingCandidate.resume =
-            req.files.resume[0]
-              .filename;
-
-        }
-
-        // KEEP OLD IMAGE
-        if (
-          req.files
-            ?.profileImage
-        ) {
-
-          existingCandidate.profileImage =
-            req.files
-              .profileImage[0]
-              .filename;
-
-        }
-
-        await existingCandidate.save();
-
-const updatedUser =
-  await User.findByIdAndUpdate(
-    req.body.userId,
-    {
-      fullName: req.body.fullName,
-      email: req.body.email,
-      phone: req.body.phone,
-
-      profileImage:
-        req.files?.profileImage
-          ? req.files
-              .profileImage[0]
-              .filename
-          : existingCandidate.profileImage,
-    },
-    {
-      new: true,
-    }
-  );
-
-        return res.status(200).json({
-  success: true,
-  message:
-    "Profile Updated",
-  data: {
-    ...existingCandidate._doc,
-    profileImage:
-      existingCandidate.profileImage,
-  },
-});
-
       }
 
       // ======================
-      // CREATE NEW PROFILE
+      // FIND EXISTING
       // ======================
 
-      const candidate =
-        new Candidate({
-          userId:
-            req.body.userId,
-
-          fullName:
-            req.body.fullName,
-
-          email:
-            req.body.email,
-
-          phone:
-            req.body.phone,
-
-          role:
-            req.body.role,
-
-          bio:
-            req.body.bio,
-
-          portfolio:
-            req.body.portfolio,
-
-          linkedin:
-            req.body.linkedin,
-
-          github:
-            req.body.github,
-
-          skills: JSON.parse(
-            req.body.skills ||
-              "[]"
-          ),
-
-          resume:
-            req.files?.resume
-              ? req.files
-                  .resume[0]
-                  .filename
-              : "",
-
-          profileImage:
-            req.files
-              ?.profileImage
-              ? req.files
-                  .profileImage[0]
-                  .filename
-              : "",
+      let candidate =
+        await Candidate.findOne({
+          userId,
         });
 
-      await candidate.save();
+      // ======================
+      // UPDATE
+      // ======================
 
-      res.status(200).json({
+      if (candidate) {
+
+        candidate.fullName =
+          fullName;
+
+        candidate.email =
+          email;
+
+        candidate.phone =
+          phone;
+
+        candidate.role =
+          role;
+
+        candidate.bio =
+          bio;
+
+        candidate.headline =
+          headline;
+
+        candidate.location =
+          location;
+
+        candidate.experience =
+          experience;
+
+        candidate.education =
+          education;
+
+        candidate.portfolio =
+          portfolio;
+
+        candidate.linkedin =
+          linkedin;
+
+        candidate.github =
+          github;
+
+        candidate.skills =
+          JSON.parse(
+            req.body.skills || "[]"
+          );
+
+        // PROFILE IMAGE
+
+        if (
+          req.files?.profileImage
+        ) {
+          candidate.profileImage =
+            req.files.profileImage[0]
+              .filename;
+        }
+
+        // RESUME
+
+        if (req.files?.resume) {
+          candidate.resume =
+            req.files.resume[0]
+              .filename;
+        }
+
+        await candidate.save();
+
+      } else {
+
+        // ======================
+        // CREATE
+        // ======================
+
+        candidate =
+          await Candidate.create({
+            userId,
+
+            fullName,
+            email,
+            phone,
+            role,
+            bio,
+
+            headline,
+            location,
+            experience,
+            education,
+
+            portfolio,
+            linkedin,
+            github,
+
+            skills: JSON.parse(
+              req.body.skills || "[]"
+            ),
+
+            profileImage:
+              req.files
+                ?.profileImage
+                ? req.files
+                    .profileImage[0]
+                    .filename
+                : "",
+
+            resume:
+              req.files?.resume
+                ? req.files.resume[0]
+                    .filename
+                : "",
+          });
+      }
+
+      // ======================
+      // UPDATE USER
+      // ======================
+
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          fullName,
+          email,
+          phone,
+
+          profileImage:
+            candidate.profileImage,
+        }
+      );
+
+      return res.status(200).json({
         success: true,
         message:
-          "Profile Saved",
+          "Profile Saved Successfully",
         data: candidate,
       });
 
@@ -235,56 +227,25 @@ const updatedUser =
 
       console.log(error);
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message:
           error.message,
       });
 
     }
-
   }
 );
 
-// ======================
-// GET ALL
-// ======================
-
-router.get(
-  "/all",
-  async (req, res) => {
-
-    try {
-
-      const candidates =
-        await Candidate.find();
-
-      res.status(200).json({
-        success: true,
-        data: candidates,
-      });
-
-    } catch (error) {
-
-      res.status(500).json({
-        success: false,
-        message:
-          error.message,
-      });
-
-    }
-
-  }
-);
 
 // ======================
-// GET SINGLE
+// GET SINGLE PROFILE
 // ======================
 
 router.get(
   "/:userId",
-  async (req, res) => {
 
+  async (req, res) => {
     try {
 
       const candidate =
@@ -317,7 +278,6 @@ router.get(
       });
 
     }
-
   }
 );
 

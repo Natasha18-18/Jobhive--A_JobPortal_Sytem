@@ -1,304 +1,444 @@
-import { motion } from "framer-motion";
+import {
+  Link,
+} from "react-router-dom";
 
 import {
-  FaEnvelope,
-  FaPhoneAlt,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import axios from "axios";
+
+import {
+  motion,
+} from "framer-motion";
+
+import {
+  FaBuilding,
   FaMapMarkerAlt,
-  FaPaperPlane,
-  FaClock,
+  FaUsers,
+  FaArrowRight,
+  FaSearch,
+  FaStar,
+  FaBriefcase,
+  FaCheckCircle,
   FaGlobe,
 } from "react-icons/fa";
 
-function Contact() {
+function Companies() {
+
+  const [companies, setCompanies] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [search, setSearch] =
+    useState("");
+
+  useEffect(() => {
+
+    fetchCompanies();
+
+  }, []);
+
+  const fetchCompanies =
+    async () => {
+
+      try {
+
+        const res =
+          await axios.get(
+            "http://localhost:5002/api/companies"
+          );
+
+        if (res.data.success) {
+
+          setCompanies(
+            res.data.companies
+          );
+
+        }
+
+      }
+
+      catch (error) {
+
+        console.log(error);
+
+      }
+
+      finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+  // =========================
+  // FILTER
+  // =========================
+
+  const filteredCompanies =
+    useMemo(() => {
+
+      return companies.filter(
+        (company) => {
+
+          const text =
+            search.toLowerCase();
+
+          return (
+
+            company
+              ?.recruiterProfile
+              ?.companyName
+              ?.toLowerCase()
+              .includes(text)
+
+            ||
+
+            company
+              ?.recruiterProfile
+              ?.location
+              ?.toLowerCase()
+              .includes(text)
+
+            ||
+
+            company
+              ?.recruiterProfile
+              ?.industry
+              ?.toLowerCase()
+              .includes(text)
+
+          );
+
+        }
+      );
+
+    }, [search, companies]);
+
   return (
-    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#050816] via-[#0b1120] to-[#111827] pt-32 pb-20 px-6">
 
-      {/* BG GLOW */}
-      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-blue-600/20 blur-3xl rounded-full"></div>
+    <section className="min-h-screen bg-[#030712] pt-28 pb-20 px-5 text-white overflow-hidden">
 
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-cyan-500/10 blur-3xl rounded-full"></div>
+      <div className="max-w-7xl mx-auto">
 
-      {/* GRID */}
-      <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:60px_60px]"></div>
+        {/* TOP */}
 
-      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="flex flex-col lg:flex-row justify-between gap-6 mb-12">
 
-        {/* HEADING */}
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 30,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.7,
-          }}
-          className="text-center"
-        >
+          <div>
 
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-tight">
+            <h1 className="text-5xl font-black">
 
-            Get In
+              Top Companies
 
-            <span className="block bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            </h1>
 
-              Touch
+            <p className="text-gray-400 mt-4 text-lg">
 
-            </span>
-
-          </h1>
-
-          <p className="mt-6 text-gray-400 text-lg max-w-3xl mx-auto leading-relaxed">
-
-            Have questions, suggestions, or need support?
-            Our team is always ready to help you.
-
-          </p>
-
-        </motion.div>
-
-        {/* MAIN GRID */}
-        <div className="grid lg:grid-cols-2 gap-10 mt-20">
-
-          {/* LEFT SIDE */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              x: -40,
-            }}
-            animate={{
-              opacity: 1,
-              x: 0,
-            }}
-            transition={{
-              duration: 0.8,
-            }}
-            className="bg-white/5 border border-white/10 rounded-[40px] p-8 md:p-12 backdrop-blur-2xl shadow-2xl"
-          >
-
-            <h2 className="text-4xl font-black text-white">
-
-              Send Message
-
-            </h2>
-
-            <p className="mt-4 text-gray-400">
-
-              Fill out the form below and we'll contact you soon.
+              Explore recruiters and companies hiring now
 
             </p>
 
-            {/* FORM */}
-            <form className="mt-10 space-y-6">
+          </div>
 
-              {/* NAME */}
-              <div>
+          {/* SEARCH */}
 
-                <label className="text-sm text-gray-300 mb-3 block">
-                  Full Name
-                </label>
+          <div className="w-full lg:w-[400px]">
 
-                <input
-                  type="text"
-                  placeholder="Enter your full name"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-gray-500 outline-none focus:border-cyan-400 transition"
-                />
+            <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
 
-              </div>
+              <FaSearch className="text-cyan-400" />
 
-              {/* EMAIL */}
-              <div>
-
-                <label className="text-sm text-gray-300 mb-3 block">
-                  Email Address
-                </label>
-
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-gray-500 outline-none focus:border-cyan-400 transition"
-                />
-
-              </div>
-
-              {/* SUBJECT */}
-              <div>
-
-                <label className="text-sm text-gray-300 mb-3 block">
-                  Subject
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="Enter subject"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-gray-500 outline-none focus:border-cyan-400 transition"
-                />
-
-              </div>
-
-              {/* MESSAGE */}
-              <div>
-
-                <label className="text-sm text-gray-300 mb-3 block">
-                  Message
-                </label>
-
-                <textarea
-                  rows="6"
-                  placeholder="Write your message..."
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-gray-500 outline-none resize-none focus:border-cyan-400 transition"
-                ></textarea>
-
-              </div>
-
-              {/* BUTTON */}
-              <motion.button
-                whileHover={{
-                  scale: 1.02,
-                }}
-                whileTap={{
-                  scale: 0.98,
-                }}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 py-4 rounded-2xl font-semibold shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300 flex items-center justify-center gap-3"
-              >
-
-                Send Message
-
-                <FaPaperPlane />
-
-              </motion.button>
-
-            </form>
-
-          </motion.div>
-
-          {/* RIGHT SIDE */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              x: 40,
-            }}
-            animate={{
-              opacity: 1,
-              x: 0,
-            }}
-            transition={{
-              duration: 0.8,
-            }}
-            className="space-y-8"
-          >
-
-            {/* CARD 1 */}
-            <div className="bg-white/5 border border-white/10 rounded-[35px] p-8 backdrop-blur-2xl shadow-2xl">
-
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-2xl shadow-2xl">
-
-                <FaEnvelope />
-
-              </div>
-
-              <h2 className="mt-6 text-3xl font-bold text-white">
-
-                Email Us
-
-              </h2>
-
-              <p className="mt-4 text-gray-400 leading-relaxed">
-
-                support@jobportal.com
-
-              </p>
+              <input
+                type="text"
+                placeholder="Search company..."
+                value={search}
+                onChange={(e) =>
+                  setSearch(
+                    e.target.value
+                  )
+                }
+                className="bg-transparent outline-none w-full placeholder:text-gray-500"
+              />
 
             </div>
 
-            {/* CARD 2 */}
-            <div className="bg-white/5 border border-white/10 rounded-[35px] p-8 backdrop-blur-2xl shadow-2xl">
-
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-2xl shadow-2xl">
-
-                <FaPhoneAlt />
-
-              </div>
-
-              <h2 className="mt-6 text-3xl font-bold text-white">
-
-                Call Us
-
-              </h2>
-
-              <p className="mt-4 text-gray-400 leading-relaxed">
-
-                +91 98765 43210
-
-              </p>
-
-            </div>
-
-            {/* CARD 3 */}
-            <div className="bg-white/5 border border-white/10 rounded-[35px] p-8 backdrop-blur-2xl shadow-2xl">
-
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-2xl shadow-2xl">
-
-                <FaMapMarkerAlt />
-
-              </div>
-
-              <h2 className="mt-6 text-3xl font-bold text-white">
-
-                Office Address
-
-              </h2>
-
-              <p className="mt-4 text-gray-400 leading-relaxed">
-
-                Gurugram, Haryana, India
-
-              </p>
-
-            </div>
-
-            {/* EXTRA INFO */}
-            <div className="bg-white/5 border border-white/10 rounded-[35px] p-8 backdrop-blur-2xl shadow-2xl">
-
-              <h2 className="text-3xl font-bold text-white">
-
-                Support Hours
-
-              </h2>
-
-              <div className="mt-6 space-y-5">
-
-                <div className="flex items-center gap-4 text-gray-300">
-
-                  <FaClock className="text-cyan-400" />
-
-                  Mon - Fri : 9AM - 6PM
-
-                </div>
-
-                <div className="flex items-center gap-4 text-gray-300">
-
-                  <FaGlobe className="text-cyan-400" />
-
-                  www.jobportal.com
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </motion.div>
+          </div>
 
         </div>
+
+        {/* LOADING */}
+
+        {loading ? (
+
+          <div className="flex justify-center mt-24">
+
+            <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+
+          </div>
+
+        ) : filteredCompanies.length === 0 ? (
+
+          <div className="text-center mt-24">
+
+            <h2 className="text-4xl font-black">
+
+              No Companies Found
+
+            </h2>
+
+            <p className="text-gray-400 mt-4">
+
+              Try another keyword
+
+            </p>
+
+          </div>
+
+        ) : (
+
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+            {filteredCompanies.map(
+              (company, index) => (
+
+                <motion.div
+                  key={company._id}
+                  initial={{
+                    opacity: 0,
+                    y: 30,
+                  }}
+                  whileInView={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    delay:
+                      index * 0.05,
+                  }}
+                  whileHover={{
+                    y: -8,
+                  }}
+                  className="bg-white/5 border border-white/10 hover:border-cyan-400/30 rounded-[30px] overflow-hidden transition-all duration-300"
+                >
+
+                  {/* HEADER */}
+
+                  <div className="h-36 bg-gradient-to-r from-cyan-500 to-blue-600 relative"></div>
+
+                  {/* LOGO */}
+
+                  <div className="px-7 relative">
+
+                   <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-white/10 bg-[#111827] flex items-center justify-center">
+
+  {company?.recruiterProfile?.companyLogo ? (
+
+    <img
+      src={`http://localhost:5002/uploads/${company.recruiterProfile.companyLogo}`}
+      alt="logo"
+      className="w-full h-full object-cover"
+    />
+
+  ) : company?.profileImage ? (
+
+    <img
+      src={`http://localhost:5002/uploads/${company.profileImage}`}
+      alt="profile"
+      className="w-full h-full object-cover"
+    />
+
+  ) : (
+
+    <div className="w-full h-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-4xl">
+
+      <FaBuilding />
+
+    </div>
+
+  )}
+
+</div>
+
+                  </div>
+
+                  {/* CONTENT */}
+
+                  <div className="p-7">
+
+                    <div className="flex items-start justify-between gap-4">
+
+                      <div>
+
+                        <h2 className="text-3xl font-black">
+
+                          {
+                            company
+                              ?.recruiterProfile
+                              ?.companyName
+
+                            ||
+
+                            "Company"
+                          }
+
+                        </h2>
+
+                        <p className="text-cyan-400 mt-2">
+
+                          {
+                            company
+                              ?.recruiterProfile
+                              ?.industry
+
+                            ||
+
+                            "Technology"
+                          }
+
+                        </p>
+
+                      </div>
+
+                      <div className="flex items-center gap-2 text-green-400 text-sm">
+
+                        <FaCheckCircle />
+
+                        Verified
+
+                      </div>
+
+                    </div>
+
+                    {/* INFO */}
+
+                    <div className="mt-8 space-y-5 text-gray-300">
+
+                      <div className="flex items-center gap-4">
+
+                        <FaMapMarkerAlt className="text-cyan-400" />
+
+                        <span>
+
+                          {
+                            company
+                              ?.recruiterProfile
+                              ?.location
+
+                            ||
+
+                            "Remote"
+                          }
+
+                        </span>
+
+                      </div>
+
+                      <div className="flex items-center gap-4">
+
+                        <FaBriefcase className="text-cyan-400" />
+
+                        <span>
+
+                          {
+                            company.totalJobs
+                          } Jobs Open
+
+                        </span>
+
+                      </div>
+
+                      <div className="flex items-center gap-4">
+
+                        <FaUsers className="text-cyan-400" />
+
+                        <span>
+
+                          Hiring Team
+
+                        </span>
+
+                      </div>
+
+                      {company
+                        ?.recruiterProfile
+                        ?.website && (
+
+                        <div className="flex items-center gap-4">
+
+                          <FaGlobe className="text-cyan-400" />
+
+                          <a
+                            href={
+                              company
+                                ?.recruiterProfile
+                                ?.website
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-cyan-300 hover:underline truncate"
+                          >
+
+                            Visit Website
+
+                          </a>
+
+                        </div>
+
+                      )}
+
+                    </div>
+
+                    {/* FOOTER */}
+
+                    <div className="mt-8 flex items-center justify-between">
+
+                      <div className="flex items-center gap-2 text-yellow-400">
+
+                        <FaStar />
+
+                        4.8 Rating
+
+                      </div>
+
+                    </div>
+
+                    {/* BUTTON */}
+
+                    <Link
+                      to={`/company/${company._id}`}
+                      className="mt-8 flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-500 to-blue-600 py-4 rounded-2xl font-semibold hover:scale-[1.02] transition-all"
+                    >
+
+                      View Company
+
+                      <FaArrowRight />
+
+                    </Link>
+
+                  </div>
+
+                </motion.div>
+
+              )
+            )}
+
+          </div>
+
+        )}
 
       </div>
 
     </section>
+
   );
+
 }
 
-export default Contact;
+export default Companies; 

@@ -14,6 +14,9 @@ import jobRoutes from "./routes/jobRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import recruiterRoutes from "./routes/recruiterRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import companyRoutes from "./routes/companyRoutes.js";
+import savedJobRoutes from "./routes/savedJobRoutes.js";
 
 dotenv.config();
 
@@ -81,6 +84,9 @@ app.use("/api/jobs", jobRoutes );
 app.use("/api/application", applicationRoutes);
 app.use("/api/recruiter", recruiterRoutes);
 app.use("/api/notifications",notificationRoutes);
+app.use("/api/user",userRoutes);
+app.use("/api/companies",companyRoutes);
+app.use("/api/saved", savedJobRoutes);
 
 // ======================
 // 404 HANDLER

@@ -31,10 +31,10 @@ const notificationSchema = new mongoose.Schema(
       default: "job",
     },
 
-    read: {
-      type: Boolean,
-      default: false,
-    },
+    isRead: {
+  type: Boolean,
+  default: false,
+},
   },
   {
     timestamps: true,

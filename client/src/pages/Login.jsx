@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
 import { motion } from "framer-motion";
+
 import toast from "react-hot-toast";
 
 import API from "../utils/api";
@@ -14,6 +16,8 @@ import {
   FaArrowRight,
   FaUserTie,
   FaUser,
+  FaEye,
+  FaEyeSlash,
 } from "react-icons/fa";
 
 function Login() {
@@ -29,6 +33,9 @@ function Login() {
   const [otpTimer, setOtpTimer] = useState(60);
 
   const [loading, setLoading] = useState(false);
+
+  const [showPassword, setShowPassword] =
+    useState(false);
 
   const [errors, setErrors] = useState({});
 
@@ -82,13 +89,35 @@ function Login() {
 
     }
 
+    else if (
+      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(
+        formData.email
+      )
+    ) {
+
+      newErrors.email =
+        "Invalid email address";
+
+    }
+
     // PASSWORD
     if (
       loginType === "password" &&
       !formData.password
     ) {
 
-      newErrors.password = "Password is required";
+      newErrors.password =
+        "Password is required";
+
+    }
+
+    else if (
+      loginType === "password" &&
+      formData.password.length < 6
+    ) {
+
+      newErrors.password =
+        "Password must be at least 6 characters";
 
     }
 
@@ -136,7 +165,8 @@ function Login() {
       if (data.success) {
 
         toast.success(
-          data.message || "OTP sent successfully"
+          data.message ||
+            "OTP sent successfully"
         );
 
         setShowOtpField(true);
@@ -148,21 +178,55 @@ function Login() {
       else {
 
         toast.error(
-          data.message || "Failed to send OTP"
+          data.message ||
+            "Failed to send OTP"
         );
 
       }
 
     }
 
-    catch (error) {
+catch (error) {
 
-      toast.error(
-        error.response?.data?.message ||
-        "Failed to send OTP"
-      );
+  const message =
+    error.response?.data?.message ||
+    "Login failed";
 
-    }
+  // TOAST
+  toast.error(message);
+
+  // FIELD ERRORS
+  if (
+    message === "User does not exist"
+  ) {
+
+    setErrors({
+      email: "User does not exist",
+    });
+
+  }
+
+  else if (
+    message === "Incorrect password"
+  ) {
+
+    setErrors({
+      password: "Incorrect password",
+    });
+
+  }
+
+  else if (
+    message === "Invalid role selected"
+  ) {
+
+    toast.error(
+      "Please select correct role"
+    );
+
+  }
+
+}
 
     finally {
 
@@ -213,53 +277,57 @@ function Login() {
 
       }
 
-if (response.data.success) {
+      if (response.data.success) {
 
-  toast.success(
-    response.data.message ||
-    "Login successful 🎉"
-  );
+        toast.success(
+          response.data.message ||
+            "Login successful 🎉"
+        );
 
-  // SAVE TOKEN
-  localStorage.setItem(
-    "token",
-    response.data.token
-  );
+        localStorage.setItem(
+          "token",
+          response.data.token
+        );
 
-  // SAVE USER
-  localStorage.setItem(
-    "user",
-    JSON.stringify(response.data.user)
-  );
+        localStorage.setItem(
+          "user",
+          JSON.stringify(
+            response.data.user
+          )
+        );
 
-  // LOGIN FLAG
-  localStorage.setItem(
-    "isLoggedIn",
-    "true"
-  );
+        localStorage.setItem(
+          "isLoggedIn",
+          "true"
+        );
 
-  // UPDATE NAVBAR
-  window.dispatchEvent(
-    new Event("profileUpdated")
-  );
+        window.dispatchEvent(
+          new Event("profileUpdated")
+        );
 
-  // REDIRECT
-  if (response.data.user.role === "recruiter") {
+        if (
+          response.data.user.role ===
+          "recruiter"
+        ) {
 
-    navigate("/recruiter/dashboard");
+          window.location.href =
+  "/recruiter/dashboard";
 
-  } else {
+        }
 
-    navigate("/");
+        else {
 
-  }
+          window.location.href = "/jobs";
 
-}
+        }
+
+      }
+
       else {
 
         toast.error(
           response.data.message ||
-          "Login failed"
+            "Login failed"
         );
 
       }
@@ -270,7 +338,9 @@ if (response.data.success) {
 
       toast.error(
         error.response?.data?.message ||
-        "Login failed"
+          (error.response?.status === 404
+            ? "User does not exist"
+            : "Login failed")
       );
 
     }
@@ -285,119 +355,188 @@ if (response.data.success) {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#050816] via-[#0b1120] to-[#111827] min-h-screen pt-32 pb-20 px-6">
+      <section className="relative overflow-hidden bg-[#030712] min-h-screen pt-24 pb-16 px-5">
 
-        {/* BG */}
-        <div className="absolute top-0 left-0 w-[350px] h-[350px] bg-blue-600/20 blur-3xl rounded-full"></div>
+        {/* BG EFFECTS */}
+        <div className="absolute top-[-100px] left-[-100px] w-[350px] h-[350px] bg-cyan-500/20 blur-3xl rounded-full"></div>
 
-        <div className="absolute bottom-0 right-0 w-[350px] h-[350px] bg-cyan-500/10 blur-3xl rounded-full"></div>
+        <div className="absolute bottom-[-100px] right-[-100px] w-[350px] h-[350px] bg-blue-600/20 blur-3xl rounded-full"></div>
 
         {/* GRID */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:60px_60px]"></div>
+        <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:55px_55px]"></div>
 
         {/* MAIN */}
-        <div className="max-w-6xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto relative z-10">
 
-          <div className="grid lg:grid-cols-2 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[35px] overflow-hidden shadow-2xl">
+          <div className="grid lg:grid-cols-2 min-h-[850px] bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[40px] overflow-hidden shadow-[0_0_80px_rgba(0,255,255,0.08)]">
 
-            {/* LEFT */}
-            <div className="hidden lg:flex flex-col justify-center p-14 relative overflow-hidden">
+            {/* LEFT SIDE */}
+            <div className="hidden lg:flex relative overflow-hidden">
 
-              <div className="absolute top-10 left-10 w-60 h-60 bg-blue-500/20 blur-3xl rounded-full"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-700/20 via-cyan-500/10 to-transparent"></div>
+
+              <div className="absolute top-[-80px] left-[-80px] w-[280px] h-[280px] bg-cyan-500/20 rounded-full blur-3xl"></div>
+
+              <div className="absolute bottom-[-120px] right-[-80px] w-[320px] h-[320px] bg-blue-600/20 rounded-full blur-3xl"></div>
+
+              <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:50px_50px]"></div>
 
               <motion.div
-                initial={{ opacity: 0, x: -40 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.7 }}
-                className="relative z-10"
+                initial={{
+                  opacity: 0,
+                  x: -60,
+                }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                }}
+                transition={{
+                  duration: 0.8,
+                }}
+                className="relative z-10 flex flex-col justify-between h-full w-full p-14"
               >
 
-                {/* LOGO */}
-                <div className="flex items-center gap-4">
+                <div>
 
-                  <div className="w-16 h-16 rounded-3xl bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center shadow-2xl text-white text-2xl">
+                  <div className="flex items-center gap-4">
 
-                    <FaBriefcase />
+                    <motion.div
+                      whileHover={{
+                        rotate: 8,
+                        scale: 1.05,
+                      }}
+                      className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-cyan-400 via-blue-500 to-blue-700 flex items-center justify-center shadow-[0_0_35px_rgba(0,255,255,0.35)] text-white text-3xl"
+                    >
+
+                      <FaBriefcase />
+
+                    </motion.div>
+
+                    <div>
+
+                      <h1 className="text-5xl font-black tracking-tight text-white">
+
+                        Job
+                        <span className="text-cyan-400">
+                          Portal
+                        </span>
+
+                      </h1>
+
+                      <p className="text-gray-400 mt-1 text-lg">
+                        Smart Hiring Platform
+                      </p>
+
+                    </div>
 
                   </div>
 
-                  <div>
+                  <div className="mt-16">
 
-                    <h1 className="text-4xl font-black text-white">
+                    <p className="uppercase tracking-[6px] text-cyan-400 text-sm font-semibold mb-5">
 
-                      Job<span className="text-cyan-400">Portal</span>
+                      Your Career Starts Here
 
-                    </h1>
+                    </p>
 
-                    <p className="text-gray-400 mt-1">
-                      Modern Hiring Platform
+                    <h2 className="text-6xl font-black leading-[1.1] text-white">
+
+                      Find Your
+
+                      <span className="block mt-2 bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-500 bg-clip-text text-transparent">
+
+                        Dream Job Faster
+
+                      </span>
+
+                    </h2>
+
+                    <p className="mt-8 text-lg text-gray-300 leading-relaxed max-w-xl">
+
+                      Connect with top companies,
+                      explore premium
+                      opportunities, and unlock
+                      the next step of your
+                      professional journey with
+                      our modern AI-powered
+                      hiring platform.
+
                     </p>
 
                   </div>
 
                 </div>
 
-                {/* TITLE */}
-                <h2 className="mt-14 text-5xl leading-tight font-black text-white">
-
-                  Welcome Back
-
-                  <span className="block bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-
-                    Start Your Career
-
-                  </span>
-
-                </h2>
-
-                {/* DESC */}
-                <p className="mt-6 text-lg text-gray-300 leading-relaxed max-w-md">
-
-                  Discover top opportunities, connect with leading companies,
-                  and apply for your dream jobs instantly.
-
-                </p>
-
               </motion.div>
 
             </div>
 
-            {/* RIGHT */}
+            {/* RIGHT SIDE */}
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className="bg-[#0f172a]/80 backdrop-blur-2xl p-8 md:p-14 flex flex-col justify-center"
+              initial={{
+                opacity: 0,
+                y: 50,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                duration: 0.8,
+              }}
+              className="relative bg-[#0b1220]/90 backdrop-blur-3xl px-7 md:px-14 py-12 flex flex-col justify-center"
             >
 
+              <div className="absolute top-0 right-0 w-72 h-72 bg-cyan-500/10 blur-3xl rounded-full"></div>
+
               {/* HEADING */}
-              <div className="text-center">
+              <div className="relative z-10 text-center">
 
-                <h2 className="text-4xl font-black text-white">
+                <motion.div
+                  initial={{
+                    scale: 0.8,
+                    opacity: 0,
+                  }}
+                  animate={{
+                    scale: 1,
+                    opacity: 1,
+                  }}
+                  transition={{
+                    duration: 0.5,
+                  }}
+                  className="mx-auto mb-6 w-20 h-20 rounded-[28px] bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-3xl shadow-[0_0_40px_rgba(0,255,255,0.25)]"
+                >
 
-                  Login Account
+                  <FaUser />
+
+                </motion.div>
+
+                <h2 className="text-5xl font-black text-white">
+
+                  Welcome Back
 
                 </h2>
 
-                <p className="mt-3 text-gray-400">
+                <p className="mt-4 text-gray-400 text-lg">
 
-                  Access your account and continue your journey
+                  Login and continue your journey
 
                 </p>
 
               </div>
 
-              {/* ROLE SELECT */}
-              <div className="mt-8 grid grid-cols-2 gap-4">
+              {/* ROLE */}
+              <div className="mt-10 grid grid-cols-2 gap-4">
 
-                {/* CANDIDATE */}
                 <button
                   type="button"
-                  onClick={() => setRole("candidate")}
+                  onClick={() =>
+                    setRole("candidate")
+                  }
                   className={`p-4 rounded-2xl border transition-all duration-300 ${
                     role === "candidate"
-                      ? "bg-gradient-to-r from-blue-600 to-cyan-500 border-cyan-400 text-white"
-                      : "bg-white/5 border-white/10 text-gray-300"
+                      ? "bg-gradient-to-r from-blue-600 to-cyan-500 border-cyan-400 text-white shadow-[0_0_25px_rgba(0,255,255,0.2)]"
+                      : "bg-white/5 border-white/10 text-gray-300 hover:border-cyan-400"
                   }`}
                 >
 
@@ -407,14 +546,15 @@ if (response.data.success) {
 
                 </button>
 
-                {/* RECRUITER */}
                 <button
                   type="button"
-                  onClick={() => setRole("recruiter")}
+                  onClick={() =>
+                    setRole("recruiter")
+                  }
                   className={`p-4 rounded-2xl border transition-all duration-300 ${
                     role === "recruiter"
-                      ? "bg-gradient-to-r from-blue-600 to-cyan-500 border-cyan-400 text-white"
-                      : "bg-white/5 border-white/10 text-gray-300"
+                      ? "bg-gradient-to-r from-blue-600 to-cyan-500 border-cyan-400 text-white shadow-[0_0_25px_rgba(0,255,255,0.2)]"
+                      : "bg-white/5 border-white/10 text-gray-300 hover:border-cyan-400"
                   }`}
                 >
 
@@ -431,7 +571,9 @@ if (response.data.success) {
 
                 <button
                   type="button"
-                  onClick={() => setLoginType("password")}
+                  onClick={() =>
+                    setLoginType("password")
+                  }
                   className={`flex-1 py-3 rounded-xl font-semibold transition-all duration-300 ${
                     loginType === "password"
                       ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-xl"
@@ -445,7 +587,9 @@ if (response.data.success) {
 
                 <button
                   type="button"
-                  onClick={() => setLoginType("otp")}
+                  onClick={() =>
+                    setLoginType("otp")
+                  }
                   className={`flex-1 py-3 rounded-xl font-semibold transition-all duration-300 ${
                     loginType === "otp"
                       ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-xl"
@@ -474,11 +618,13 @@ if (response.data.success) {
 
                   </label>
 
-                  <div className={`flex items-center gap-4 bg-white/5 border rounded-2xl px-5 py-4 ${
-                    errors.email
-                      ? "border-red-500"
-                      : "border-white/10"
-                  }`}>
+                  <div
+                    className={`flex items-center gap-4 bg-white/5 border rounded-2xl px-5 py-4 transition-all duration-300 focus-within:border-cyan-400 ${
+                      errors.email
+                        ? "border-red-500"
+                        : "border-white/10"
+                    }`}
+                  >
 
                     <FaEnvelope className="text-cyan-400" />
 
@@ -495,13 +641,15 @@ if (response.data.success) {
 
                   {errors.email && (
                     <p className="text-red-400 text-sm mt-2">
+
                       {errors.email}
+
                     </p>
                   )}
 
                 </div>
 
-                {/* PASSWORD LOGIN */}
+                {/* PASSWORD */}
                 {loginType === "password" && (
                   <>
                     <div>
@@ -512,28 +660,56 @@ if (response.data.success) {
 
                       </label>
 
-                      <div className={`flex items-center gap-4 bg-white/5 border rounded-2xl px-5 py-4 ${
-                        errors.password
-                          ? "border-red-500"
-                          : "border-white/10"
-                      }`}>
+                      <div
+                        className={`flex items-center gap-4 bg-white/5 border rounded-2xl px-5 py-4 transition-all duration-300 focus-within:border-cyan-400 ${
+                          errors.password
+                            ? "border-red-500"
+                            : "border-white/10"
+                        }`}
+                      >
 
                         <FaLock className="text-cyan-400" />
 
                         <input
-                          type="password"
+                          type={
+                            showPassword
+                              ? "text"
+                              : "password"
+                          }
                           name="password"
-                          value={formData.password}
+                          value={
+                            formData.password
+                          }
                           onChange={handleChange}
                           placeholder="Enter your password"
                           className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
                         />
 
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowPassword(
+                              !showPassword
+                            )
+                          }
+                          className="text-cyan-400 text-lg"
+                        >
+
+                          <span className="text-sm font-medium">
+  {showPassword
+    ? "Hide"
+    : "Show"}
+</span>
+
+                        </button>
+
                       </div>
 
                       {errors.password && (
                         <p className="text-red-400 text-sm mt-2">
+
                           {errors.password}
+
                         </p>
                       )}
 
@@ -554,15 +730,18 @@ if (response.data.success) {
                   </>
                 )}
 
-                {/* OTP LOGIN */}
+                {/* OTP */}
                 {loginType === "otp" && (
                   <>
-
                     {!showOtpField && (
                       <motion.button
                         type="button"
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover={{
+                          scale: 1.02,
+                        }}
+                        whileTap={{
+                          scale: 0.98,
+                        }}
                         onClick={handleSendOtp}
                         className="w-full bg-white/5 hover:bg-white/10 border border-white/10 py-4 rounded-2xl font-semibold text-white transition-all duration-300"
                       >
@@ -584,19 +763,25 @@ if (response.data.success) {
 
                           </label>
 
-                          <div className={`flex items-center gap-4 bg-white/5 border rounded-2xl px-5 py-4 ${
-                            errors.otp
-                              ? "border-red-500"
-                              : "border-white/10"
-                          }`}>
+                          <div
+                            className={`flex items-center gap-4 bg-white/5 border rounded-2xl px-5 py-4 transition-all duration-300 ${
+                              errors.otp
+                                ? "border-red-500"
+                                : "border-white/10"
+                            }`}
+                          >
 
                             <FaLock className="text-cyan-400" />
 
                             <input
                               type="text"
                               name="otp"
-                              value={formData.otp}
-                              onChange={handleChange}
+                              value={
+                                formData.otp
+                              }
+                              onChange={
+                                handleChange
+                              }
                               placeholder="Enter OTP"
                               className="bg-transparent outline-none w-full text-white placeholder:text-gray-500"
                             />
@@ -605,32 +790,10 @@ if (response.data.success) {
 
                           {errors.otp && (
                             <p className="text-red-400 text-sm mt-2">
+
                               {errors.otp}
+
                             </p>
-                          )}
-
-                        </div>
-
-                        <div className="flex items-center justify-between">
-
-                          <p className="text-gray-400 text-sm">
-
-                            {otpTimer > 0
-                              ? `Resend OTP in ${otpTimer}s`
-                              : "Didn't receive OTP?"}
-
-                          </p>
-
-                          {otpTimer <= 0 && (
-                            <button
-                              type="button"
-                              onClick={handleSendOtp}
-                              className="text-cyan-400 hover:text-cyan-300 text-sm font-semibold"
-                            >
-
-                              Resend OTP
-
-                            </button>
                           )}
 
                         </div>
@@ -639,77 +802,60 @@ if (response.data.success) {
                   </>
                 )}
 
-                {/* LOGIN BUTTON */}
-                <motion.button
-                  type="submit"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 py-4 rounded-2xl font-semibold shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300 flex items-center justify-center gap-3 text-white"
-                >
-
-                  {loading
-                    ? "Please wait..."
-                    : "Login Now"}
-
-                  <FaArrowRight />
-
-                </motion.button>
-
-              </form>
-
-              {/* DIVIDER */}
-              <div className="flex items-center gap-4 my-8">
-
-                <div className="flex-1 h-[1px] bg-white/10"></div>
-
-                <span className="text-gray-500 text-sm">
-                  OR
-                </span>
-
-                <div className="flex-1 h-[1px] bg-white/10"></div>
-
-              </div>
-
-              {/* GOOGLE */}
-              <button className="w-full bg-white/5 hover:bg-white/10 border border-white/10 py-4 rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-3">
-
-                <FaGoogle />
-
-                Continue with Google
-
-              </button>
-
-              {/* SIGNUP */}
-              <p className="text-center mt-8 text-gray-400">
-
-                Don’t have an account?
-
-                <Link
-                  to="/signup"
-                  className="text-cyan-400 hover:text-cyan-300 ml-2 font-semibold transition"
-                >
-
-                  Create Account
-
-                </Link>
-
-                {/* BACK TO HOME */}
+{/* LOGIN BUTTON */}
 <motion.button
-  whileHover={{ scale: 1.01 }}
-  whileTap={{ scale: 0.98 }}
-  onClick={() => navigate("/")}
-  className="mt-5 w-full bg-white/5 hover:bg-white/10 border border-white/10 py-4 rounded-2xl font-semibold text-white transition-all duration-300"
+  type="submit"
+  whileHover={{
+    scale: 1.02,
+  }}
+  whileTap={{
+    scale: 0.97,
+  }}
+  className="w-full bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 py-4 rounded-2xl font-bold text-lg shadow-2xl transition-all duration-300 flex items-center justify-center gap-3 text-white"
 >
 
-  Back To Home
+  {loading
+    ? "Please wait..."
+    : "Login Now"}
+
+  <FaArrowRight />
 
 </motion.button>
 
-              </p>
+{/* EXTRA LINKS */}
+<div className="mt-8 space-y-5 text-center">
+
+  {/* SIGNUP */}
+  <p className="text-gray-400 text-sm">
+
+    Don’t have an account?{" "}
+
+    <Link
+      to="/signup"
+      className="text-cyan-400 hover:text-cyan-300 font-semibold transition"
+    >
+      Signup
+    </Link>
+
+  </p>
+
+  {/* BACK TO HOME */}
+  <Link
+    to="/"
+    className="inline-flex items-center gap-2 text-gray-300 hover:text-cyan-400 transition font-medium"
+  >
+
+    ← Back to Home
+
+  </Link>
+
+</div>
+
+                
+
+              </form>
 
             </motion.div>
-
-            
 
           </div>
 

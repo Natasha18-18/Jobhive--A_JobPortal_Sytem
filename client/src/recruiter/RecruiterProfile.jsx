@@ -324,9 +324,9 @@ function RecruiterProfile() {
 
       // UPDATE NAVBAR
 
-      window.dispatchEvent(
-        new Event("storage")
-      );
+     window.dispatchEvent(
+  new Event("profileUpdated")
+);
 
     } catch (error) {
 

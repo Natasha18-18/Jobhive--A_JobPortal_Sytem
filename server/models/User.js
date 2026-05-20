@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
+
+    // ==========================
+    // BASIC INFO
+    // ==========================
+
     fullName: {
       type: String,
       required: true,
@@ -38,13 +43,78 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    // ==========================
-    // COMMON PROFILE IMAGE
-    // ==========================
-
+    // ✅ ADD THIS
     profileImage: {
       type: String,
       default: "",
+    },
+
+    // ==========================
+    // CANDIDATE PROFILE
+    // ==========================
+
+    headline: {
+      type: String,
+      default: "",
+    },
+
+    bio: {
+      type: String,
+      default: "",
+    },
+
+    location: {
+      type: String,
+      default: "",
+    },
+
+    experience: {
+      type: String,
+      default: "",
+    },
+
+    education: {
+      type: String,
+      default: "",
+    },
+
+    skills: [
+      {
+        type: String,
+      },
+    ],
+
+    portfolio: {
+      type: String,
+      default: "",
+    },
+
+    linkedin: {
+      type: String,
+      default: "",
+    },
+
+    github: {
+      type: String,
+      default: "",
+    },
+
+    resume: {
+      type: String,
+      default: "",
+    },
+
+    // ==========================
+    // OTP
+    // ==========================
+
+    otp: {
+      type: String,
+      default: "",
+    },
+
+    otpExpiry: {
+      type: Date,
     },
 
     // ==========================
@@ -52,6 +122,7 @@ const userSchema = new mongoose.Schema(
     // ==========================
 
     recruiterProfile: {
+
       companyName: {
         type: String,
         default: "",
@@ -96,15 +167,11 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: "",
       },
-      otp: {
-  type: String,
-},
 
-otpExpiry: {
-  type: Date,
-},
     },
+
   },
+
   {
     timestamps: true,
   }

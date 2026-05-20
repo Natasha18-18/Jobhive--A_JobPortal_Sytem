@@ -9,75 +9,34 @@ const candidateSchema = new mongoose.Schema(
       unique: true,
     },
 
-    fullName: {
-      type: String,
-      required: true,
-    },
+    fullName: String,
+    email: String,
+    phone: String,
+    role: String,
 
-    email: {
-      type: String,
-      required: true,
-    },
+    bio: String,
 
-    phone: {
-      type: String,
-      default: "",
-    },
+    headline: String,
+    location: String,
+    experience: String,
+    education: String,
 
-    role: {
-      type: String,
-      default: "",
-    },
+    portfolio: String,
+    linkedin: String,
+    github: String,
 
-    bio: {
-      type: String,
-      default: "",
-    },
+    skills: [String],
 
-    portfolio: {
-      type: String,
-      default: "",
-    },
+    resume: String,
 
-    linkedin: {
-      type: String,
-      default: "",
-    },
-
-    github: {
-      type: String,
-      default: "",
-    },
-
-    skills: [
-      {
-        type: String,
-      },
-    ],
-
-    experience: {
-      type: String,
-      default: "",
-    },
-
-    resume: {
-      type: String,
-      default: "",
-    },
-
-    profileImage: {
-      type: String,
-      default: "",
-    },
+    profileImage: String,
   },
   {
     timestamps: true,
   }
 );
 
-const Candidate = mongoose.model(
+export default mongoose.model(
   "Candidate",
   candidateSchema
 );
-
-export default Candidate;

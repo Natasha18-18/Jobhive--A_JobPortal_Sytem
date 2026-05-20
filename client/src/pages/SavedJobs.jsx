@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 
 import axios from "axios";
 
+import { motion } from "framer-motion";
+
+import { Link } from "react-router-dom";
+
 import {
   FaBookmark,
   FaMapMarkerAlt,
@@ -10,10 +14,6 @@ import {
   FaTrash,
 } from "react-icons/fa";
 
-import { motion } from "framer-motion";
-
-import { Link } from "react-router-dom";
-
 function SavedJobs() {
 
   const [savedJobs, setSavedJobs] =
@@ -21,10 +21,6 @@ function SavedJobs() {
 
   const [loading, setLoading] =
     useState(true);
-
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  );
 
   // =========================
   // FETCH SAVED JOBS
@@ -36,113 +32,159 @@ function SavedJobs() {
 
   }, []);
 
-  const fetchSavedJobs = async () => {
+  const fetchSavedJobs =
+    async () => {
 
-    try {
+      try {
 
-      const res = await axios.get(
-        `http://localhost:5002/api/saved-jobs/${user?._id}`
-      );
+        const token =
+          localStorage.getItem(
+            "token"
+          );
 
-      if (res.data.success) {
+        if (!token) {
 
-        setSavedJobs(
-          res.data.jobs
-        );
+          setLoading(false);
+
+          return;
+
+        }
+
+        const res =
+          await axios.get(
+            "http://localhost:5002/api/saved/all",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+        if (res.data.success) {
+
+          // SAVE FULL OBJECTS
+          setSavedJobs(
+            res.data.jobs
+          );
+
+        }
+
+      } catch (error) {
+
+        console.log(error);
+
+      } finally {
+
+        setLoading(false);
 
       }
 
-    } catch (error) {
-
-      console.log(error);
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  };
+    };
 
   // =========================
   // REMOVE SAVED JOB
   // =========================
 
   const removeSavedJob =
-    async (id) => {
+    async (jobId) => {
 
       try {
 
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
         await axios.delete(
-          `http://localhost:5002/api/saved-jobs/${id}`
+          `http://localhost:5002/api/saved/remove/${jobId}`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
         );
 
         setSavedJobs((prev) =>
+
           prev.filter(
-            (job) => job._id !== id
+            (job) =>
+              job.jobId !==
+              jobId
           )
+
         );
 
-      } catch (error) {
+      } catch (err) {
 
-        console.log(error);
+        console.log(err);
 
       }
 
     };
 
   return (
-    <div className="min-h-screen bg-[#050816] text-white px-6 py-28">
+
+    <section className="min-h-screen bg-[#050816] text-white px-6 pt-28 pb-20">
 
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
+
         <div className="mb-12">
 
           <h1 className="text-5xl font-black">
 
-            Saved
+            Saved{" "}
+
             <span className="text-cyan-400">
-              {" "}Jobs
+
+              Jobs
+
             </span>
 
           </h1>
 
           <p className="text-gray-400 mt-3">
 
-            Your bookmarked opportunities
+            All your bookmarked opportunities in one place
 
           </p>
 
         </div>
 
         {/* LOADING */}
-        {loading ? (
-          <div className="text-center py-20 text-gray-400">
 
-            Loading saved jobs...
+        {loading ? (
+
+          <div className="flex justify-center mt-24">
+
+            <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
 
           </div>
+
         ) : savedJobs.length === 0 ? (
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-14 text-center">
 
-            <FaBookmark className="text-6xl text-cyan-400 mx-auto mb-6" />
+          <div className="flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-3xl p-16 text-center">
 
-            <h2 className="text-3xl font-bold mb-3">
+            <FaBookmark className="text-6xl text-cyan-400 mb-6" />
 
-              No Saved Jobs
+            <h2 className="text-3xl font-bold">
+
+              No Saved Jobs Yet
 
             </h2>
 
-            <p className="text-gray-400 mb-8">
+            <p className="text-gray-400 mt-3 max-w-md">
 
-              Start saving jobs to access them later
+              Save jobs you like so you can apply later without losing them.
 
             </p>
 
             <Link
               to="/jobs"
-              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 font-semibold"
+              className="mt-8 px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 font-semibold hover:scale-105 transition"
             >
 
               Browse Jobs
@@ -150,17 +192,19 @@ function SavedJobs() {
             </Link>
 
           </div>
+
         ) : (
-          <div className="grid lg:grid-cols-2 gap-8">
+
+          <div className="grid md:grid-cols-2 gap-8">
 
             {savedJobs.map(
               (job, index) => (
 
                 <motion.div
-                  key={job._id}
+                  key={job.jobId}
                   initial={{
                     opacity: 0,
-                    y: 40,
+                    y: 30,
                   }}
                   animate={{
                     opacity: 1,
@@ -168,118 +212,161 @@ function SavedJobs() {
                   }}
                   transition={{
                     delay:
-                      index * 0.1,
+                      index * 0.05,
                   }}
-                  className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:border-cyan-400/40 transition-all duration-300"
+                  className="relative bg-white/5 border border-white/10 rounded-3xl p-7 hover:border-cyan-400/40 transition"
                 >
 
-                  {/* TOP */}
-                  <div className="flex items-start justify-between mb-6">
+                  {/* DELETE BUTTON */}
 
-                    <div>
+                  <button
+                    onClick={() =>
+                      removeSavedJob(
+                        job.jobId
+                      )
+                    }
+                    className="absolute top-5 right-5 w-10 h-10 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center"
+                  >
 
-                      <h2 className="text-2xl font-bold mb-2">
+                    <FaTrash />
 
-                        {job.title}
+                  </button>
 
-                      </h2>
+                  {/* BADGES */}
 
-                      <p className="text-cyan-400 font-medium">
+                  <div className="flex items-center gap-3 mb-5">
 
-                        {job.company}
+                    <span className="px-4 py-1 rounded-full bg-cyan-500/10 text-cyan-300 text-sm">
 
-                      </p>
+                      Saved Job
 
-                    </div>
+                    </span>
 
-                    <button
-                      onClick={() =>
-                        removeSavedJob(
-                          job._id
-                        )
-                      }
-                      className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition flex items-center justify-center"
-                    >
+                    <span className="px-4 py-1 rounded-full bg-yellow-500/10 text-yellow-300 text-sm">
 
-                      <FaTrash />
+                      Active
 
-                    </button>
+                    </span>
 
                   </div>
 
-                  {/* DETAILS */}
-                  <div className="space-y-4 mb-8">
+                  {/* TITLE */}
 
-                    <div className="flex items-center gap-3 text-gray-300">
+                  <h2 className="text-2xl font-bold">
+
+                    {job.title}
+
+                  </h2>
+
+                  <p className="text-cyan-400 font-medium mt-1">
+
+                    {job.company}
+
+                  </p>
+
+                  {/* DETAILS */}
+
+                  <div className="mt-6 space-y-4 text-gray-300">
+
+                    <div className="flex items-center gap-3">
 
                       <FaMapMarkerAlt className="text-cyan-400" />
 
-                      {job.location}
+                      {job.location || "Remote"}
 
                     </div>
 
-                    <div className="flex items-center gap-3 text-gray-300">
+                    <div className="flex items-center gap-3">
 
                       <FaMoneyBillWave className="text-green-400" />
 
-                      ₹ {job.salary}
+                      {job.salary || "Negotiable"}
 
                     </div>
 
-                    <div className="flex items-center gap-3 text-gray-300">
+                    <div className="flex items-center gap-3">
 
                       <FaClock className="text-yellow-400" />
 
-                      {job.jobType}
+                      {job.type || "Full-Time"}
 
                     </div>
 
                   </div>
 
                   {/* DESCRIPTION */}
-                  <p className="text-gray-400 line-clamp-3 mb-8">
 
-                    {job.description}
+                  <p className="text-gray-400 mt-5 line-clamp-3">
+
+                    {
+                      job.description ||
+                      "No description available."
+                    }
 
                   </p>
 
                   {/* ACTIONS */}
-                  <div className="flex gap-4">
 
-                    <Link
-                      to={`/jobs/${job.jobId}`}
-                      className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-center font-semibold hover:scale-[1.02] transition"
+                  <div className="flex gap-4 mt-8">
+
+                    {
+                      job.external ? (
+
+                        <a
+                          href={job.redirect_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-center font-semibold hover:scale-105 transition"
+                        >
+
+                          Apply Now
+
+                        </a>
+
+                      ) : (
+
+                        <Link
+                          to={`/jobs/${job.jobId}`}
+                          className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-center font-semibold hover:scale-105 transition"
+                        >
+
+                          View Job
+
+                        </Link>
+
+                      )
+                    }
+
+                    <button
+                      onClick={() =>
+                        removeSavedJob(
+                          job.jobId
+                        )
+                      }
+                      className="px-6 py-4 rounded-2xl border border-red-400/30 text-red-400 hover:bg-red-400/10 transition"
                     >
 
-                      View Job
+                      Remove
 
-                    </Link>
-
-                    <Link
-                      to="/apply-job"
-                      state={{
-                        job,
-                      }}
-                      className="flex-1 py-4 rounded-2xl border border-cyan-400/30 text-cyan-400 text-center font-semibold hover:bg-cyan-400/10 transition"
-                    >
-
-                      Apply
-
-                    </Link>
+                    </button>
 
                   </div>
 
                 </motion.div>
+
               )
             )}
 
           </div>
+
         )}
 
       </div>
 
-    </div>
+    </section>
+
   );
+
 }
 
 export default SavedJobs;

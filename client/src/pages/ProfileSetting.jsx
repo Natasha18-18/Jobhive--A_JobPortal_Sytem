@@ -70,16 +70,23 @@ function ProfileSetting() {
 
         setPasswordLoading(true);
 
-        const res = await axios.put(
-          "http://localhost:5002/api/auth/change-password",
-          {
-            userId: user._id,
-            oldPassword:
-              passwordData.oldPassword,
-            newPassword:
-              passwordData.newPassword,
-          }
-        );
+const token =
+  localStorage.getItem("token");
+
+const res = await axios.put(
+  "http://localhost:5002/api/auth/change-password",
+  {
+    oldPassword:
+      passwordData.oldPassword,
+    newPassword:
+      passwordData.newPassword,
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
         if (res.data.success) {
 

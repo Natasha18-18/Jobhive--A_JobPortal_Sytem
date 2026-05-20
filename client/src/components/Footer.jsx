@@ -4,179 +4,415 @@ import {
   FaInstagram,
   FaLinkedinIn,
   FaArrowRight,
+  FaBriefcase,
+  FaUserTie,
+  FaUserGraduate,
 } from "react-icons/fa";
 
 import { Link } from "react-router-dom";
+
 import { motion } from "framer-motion";
 
 function Footer() {
+
+  // =========================
+  // USER
+  // =========================
+
+  const user =
+    JSON.parse(
+      localStorage.getItem("user")
+    );
+
+  const role = user?.role;
+
+  // =========================
+  // DYNAMIC LINKS
+  // =========================
+
+  const candidateLinks = [
+    {
+      name: "Home",
+      path: "/",
+    },
+    {
+      name: "Jobs",
+      path: "/jobs",
+    },
+    {
+      name: "My Applications",
+      path: "/my-applications",
+    },
+    {
+      name: "Profile",
+      path: "/profile",
+    },
+    {
+      name: "Notifications",
+      path: "/notifications",
+    },
+    {
+      name: "Contact",
+      path: "/contact",
+    },
+  ];
+
+  const recruiterLinks = [
+    {
+      name: "Home",
+      path: "/",
+    },
+    {
+      name: "Post Job",
+      path: "/recruiter/post-job",
+    },
+    {
+      name: "Manage Jobs",
+      path: "/recruiter/jobs",
+    },
+    {
+      name: "Applicants",
+      path: "/recruiter/applicants",
+    },
+    {
+      name: "Recruiter Profile",
+      path: "/recruiter/profile",
+    },
+    {
+      name: "Notifications",
+      path: "/notifications",
+    },
+  ];
+
+  const guestLinks = [
+    {
+      name: "Home",
+      path: "/",
+    },
+    {
+      name: "Jobs",
+      path: "/jobs",
+    },
+    {
+      name: "Login",
+      path: "/login",
+    },
+    {
+      name: "Register",
+      path: "/signup",
+    },
+    {
+      name: "About",
+      path: "/about",
+    },
+    {
+      name: "Contact",
+      path: "/contact",
+    },
+  ];
+
+  const links =
+    role === "recruiter"
+      ? recruiterLinks
+      : role === "candidate"
+      ? candidateLinks
+      : guestLinks;
+
   return (
-    <footer className="relative overflow-hidden  bg-[#050816]/95 backdrop-blur-2xl text-white pt-24 pb-10">
 
-      {/* BACKGROUND BLUR */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 opacity-20 blur-3xl rounded-full"></div>
+    <footer className="relative overflow-hidden bg-[#050816] text-white border-t border-white/10">
 
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-400 opacity-10 blur-3xl rounded-full"></div>
+      {/* GRID */}
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
 
-        {/* TOP SECTION */}
-        <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-14 border-b border-white/10 pb-16">
+      {/* GLOW */}
+
+      <div className="absolute top-[-120px] left-[-120px] w-[300px] h-[300px] bg-cyan-500/10 blur-[120px] rounded-full"></div>
+
+      <div className="absolute bottom-[-120px] right-[-120px] w-[300px] h-[300px] bg-blue-500/10 blur-[120px] rounded-full"></div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-10">
+
+        {/* TOP */}
+
+        <div className="grid lg:grid-cols-3 gap-14 pb-14 border-b border-white/10">
 
           {/* BRAND */}
+
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            initial={{
+              opacity: 0,
+              y: 30,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
             viewport={{ once: true }}
           >
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
 
-              <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-bold shadow-xl">
-                J
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.4)]">
+
+                <FaBriefcase className="text-black text-2xl" />
+
               </div>
 
-              <h2 className="text-3xl font-extrabold">
-                Job<span className="text-blue-400">Portal</span>
-              </h2>
+              <div>
+
+                <h2 className="text-3xl font-black">
+
+                  Job
+                  <span className="text-cyan-400">
+
+                    {" "}Portal
+
+                  </span>
+
+                </h2>
+
+                <p className="text-gray-400 text-sm mt-1">
+
+                  Smart Hiring Platform
+
+                </p>
+
+              </div>
 
             </div>
 
+            {/* DESCRIPTION */}
+
             <p className="mt-6 text-gray-300 leading-relaxed">
 
-              Find your dream job, connect with top companies,
-              and build your future with our modern hiring platform.
+              Find your dream job, connect with top recruiters,
+              manage applications, and grow your career with our modern job portal platform.
 
             </p>
 
-            {/* SOCIAL ICONS */}
+            {/* ROLE */}
+
+            <div className="mt-6 flex items-center gap-3">
+
+              {role === "recruiter" ? (
+
+                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+
+                  <FaUserTie />
+
+                  Recruiter Panel
+
+                </div>
+
+              ) : role === "candidate" ? (
+
+                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-400">
+
+                  <FaUserGraduate />
+
+                  Candidate Panel
+
+                </div>
+
+              ) : (
+
+                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/10 border border-white/10 text-gray-300">
+
+                  Guest User
+
+                </div>
+
+              )}
+
+            </div>
+
+            {/* SOCIALS */}
+
             <div className="flex items-center gap-4 mt-8">
 
-              {[FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn].map(
-                (Icon, index) => (
-                  <a
-                    key={index}
-                    href="/"
-                    className="w-11 h-11 rounded-xl bg-white/10 hover:bg-blue-600 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                  >
-                    <Icon />
-                  </a>
-                )
-              )}
+              {[
+                FaFacebookF,
+                FaTwitter,
+                FaInstagram,
+                FaLinkedinIn,
+              ].map((Icon, index) => (
+
+                <a
+                  key={index}
+                  href="/"
+                  className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 hover:bg-cyan-500 hover:border-cyan-500 flex items-center justify-center transition-all duration-300 hover:scale-110"
+                >
+
+                  <Icon />
+
+                </a>
+
+              ))}
 
             </div>
 
           </motion.div>
 
           {/* QUICK LINKS */}
+
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
+            initial={{
+              opacity: 0,
+              y: 30,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.7,
+            }}
             viewport={{ once: true }}
           >
 
-            <h3 className="text-2xl font-bold mb-7">
+            <h3 className="text-2xl font-bold mb-8">
+
               Quick Links
+
             </h3>
 
-            <ul className="space-y-4">
+            <div className="grid grid-cols-2 gap-5">
 
-              {["Home", "About", "Jobs", "Companies", "Contact"].map(
+              {links.map(
                 (item, index) => (
-                  <li key={index}>
-                    <Link
-                      to="/"
-                      className="flex items-center gap-3 text-gray-300 hover:text-blue-400 transition group"
-                    >
 
-                      <FaArrowRight className="text-sm group-hover:translate-x-1 transition" />
+                  <Link
+                    key={index}
+                    to={item.path}
+                    className="group flex items-center gap-3 text-gray-300 hover:text-cyan-400 transition-all duration-300"
+                  >
 
-                      {item}
+                    <FaArrowRight className="text-xs group-hover:translate-x-1 transition" />
 
-                    </Link>
-                  </li>
+                    {item.name}
+
+                  </Link>
                 )
               )}
 
-            </ul>
+            </div>
 
           </motion.div>
 
-          {/* RESOURCES */}
+          {/* RIGHT SECTION */}
+
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            initial={{
+              opacity: 0,
+              y: 30,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.8,
+            }}
             viewport={{ once: true }}
           >
 
-            <h3 className="text-2xl font-bold mb-7">
-              Resources
-            </h3>
+            <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-7">
 
-            <ul className="space-y-4">
+              <h3 className="text-2xl font-bold mb-5">
 
-              {[
-                "Career Tips",
-                "Resume Builder",
-                "Interview Guide",
-                "Help Center",
-                "Privacy Policy",
-              ].map((item, index) => (
-                <li key={index}>
+                {role === "recruiter"
+                  ? "Hire Top Talent 🚀"
+                  : role === "candidate"
+                  ? "Find Your Dream Job 🚀"
+                  : "Join Our Platform 🚀"}
 
-                  <a
-                    href="/"
-                    className="flex items-center gap-3 text-gray-300 hover:text-blue-400 transition group"
-                  >
+              </h3>
 
-                    <FaArrowRight className="text-sm group-hover:translate-x-1 transition" />
+              <p className="text-gray-300 leading-relaxed mb-7">
 
-                    {item}
+                {role === "recruiter"
+                  ? "Post jobs, manage applicants, schedule interviews, and hire smarter with our recruiter tools."
+                  : role === "candidate"
+                  ? "Apply for jobs, track applications, receive notifications, and grow your career faster."
+                  : "Join as a candidate or recruiter and unlock powerful job portal features."}
 
-                  </a>
+              </p>
 
-                </li>
-              ))}
+              {/* BUTTONS */}
 
-            </ul>
+              <div className="space-y-4">
 
-          </motion.div>
+                {!user ? (
 
-          {/* NEWSLETTER */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9 }}
-            viewport={{ once: true }}
-          >
+                  <>
+                    <Link
+                      to="/register"
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 py-4 rounded-2xl font-semibold hover:scale-[1.02] transition-all duration-300 shadow-[0_0_30px_rgba(59,130,246,0.35)]"
+                    >
 
-            <h3 className="text-2xl font-bold mb-7">
-              Newsletter
-            </h3>
+                      Get Started
 
-            <p className="text-gray-300 leading-relaxed">
+                    </Link>
 
-              Subscribe to get latest job updates and career news.
+                    <Link
+                      to="/login"
+                      className="w-full flex items-center justify-center gap-2 border border-white/10 bg-white/5 hover:bg-white/10 py-4 rounded-2xl font-semibold transition-all duration-300"
+                    >
 
-            </p>
+                      Login Account
 
-            {/* INPUT */}
-            <div className="mt-6">
+                    </Link>
+                  </>
+                ) : role === "recruiter" ? (
 
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 text-white placeholder:text-gray-400"
-              />
+                  <>
+                    <Link
+                      to="/recruiter/post-job"
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 py-4 rounded-2xl font-semibold"
+                    >
 
-              <button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-semibold shadow-xl hover:shadow-blue-500/30 transition-all duration-300">
+                      Post New Job
 
-                Subscribe Now
+                    </Link>
 
-              </button>
+                    <Link
+                      to="/recruiter/jobs"
+                      className="w-full flex items-center justify-center gap-2 border border-white/10 bg-white/5 hover:bg-white/10 py-4 rounded-2xl font-semibold transition-all duration-300"
+                    >
+
+                      Manage Jobs
+
+                    </Link>
+                  </>
+                ) : (
+
+                  <>
+                    <Link
+                      to="/jobs"
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 py-4 rounded-2xl font-semibold"
+                    >
+
+                      Explore Jobs
+
+                    </Link>
+
+                    <Link
+                      to="/my-applications"
+                      className="w-full flex items-center justify-center gap-2 border border-white/10 bg-white/5 hover:bg-white/10 py-4 rounded-2xl font-semibold transition-all duration-300"
+                    >
+
+                      My Applications
+
+                    </Link>
+                  </>
+                )}
+
+              </div>
 
             </div>
 
@@ -185,27 +421,43 @@ function Footer() {
         </div>
 
         {/* BOTTOM */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8">
 
-          <p className="text-gray-400 text-center md:text-left">
+        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
 
-            © 2026 JobPortal. All Rights Reserved.
+          <p className="text-gray-400 text-sm text-center md:text-left">
+
+            © 2026 Job Portal. All Rights Reserved.
 
           </p>
 
-          <div className="flex items-center gap-6 text-gray-400">
+          <div className="flex items-center gap-6 text-sm text-gray-400">
 
-            <a href="/" className="hover:text-blue-400 transition">
+            <Link
+              to="/terms"
+              className="hover:text-cyan-400 transition"
+            >
+
               Terms
-            </a>
 
-            <a href="/" className="hover:text-blue-400 transition">
+            </Link>
+
+            <Link
+              to="/privacy"
+              className="hover:text-cyan-400 transition"
+            >
+
               Privacy
-            </a>
 
-            <a href="/" className="hover:text-blue-400 transition">
-              Cookies
-            </a>
+            </Link>
+
+            <Link
+              to="/contact"
+              className="hover:text-cyan-400 transition"
+            >
+
+              Contact
+
+            </Link>
 
           </div>
 
@@ -214,7 +466,9 @@ function Footer() {
       </div>
 
     </footer>
+
   );
+
 }
 
 export default Footer;

@@ -16,9 +16,10 @@ export const getMyNotifications =
           createdAt: -1,
         });
 
-      res.status(200).json(
-        notifications
-      );
+      res.status(200).json({
+  success: true,
+  notifications,
+});
 
     } catch (error) {
 
@@ -53,7 +54,7 @@ export const markAsRead =
           });
       }
 
-      notification.read = true;
+      notification.isRead = true;
 
       await notification.save();
 

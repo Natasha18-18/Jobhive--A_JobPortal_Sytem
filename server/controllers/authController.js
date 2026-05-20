@@ -150,18 +150,40 @@ export const register = async (req, res) => {
 
 // LOGIN WITH PASSWORD
 export const login = async (req, res) => {
+
   try {
 
     const { email, password, role } = req.body;
 
-    // CHECK USER
+    // EMAIL CHECK
+    if (!email) {
+
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+
+    }
+
+    // PASSWORD CHECK
+    if (!password) {
+
+      return res.status(400).json({
+        success: false,
+        message: "Password is required",
+      });
+
+    }
+
+    // FIND USER
     const user = await User.findOne({ email });
 
+    // USER NOT FOUND
     if (!user) {
 
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "User does not exist",
       });
 
     }
@@ -184,9 +206,9 @@ export const login = async (req, res) => {
 
     if (!isMatch) {
 
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
-        message: "Invalid password",
+        message: "Incorrect password",
       });
 
     }
@@ -214,12 +236,15 @@ export const login = async (req, res) => {
 
   catch (error) {
 
+    console.log(error);
+
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Server Error",
     });
 
   }
+
 };
 
 
@@ -539,74 +564,118 @@ export const resetPassword = async (req, res) => {
 // CHANGE PASSWORD
 ///////////////////////////////////////////////////////////
 
-export const changePassword = async (
-  req,
-  res
-) => {
+export const changePassword =
+  async (req, res) => {
 
-  try {
+    try {
 
-    const {
-      userId,
-      oldPassword,
-      newPassword,
-    } = req.body;
+      const {
+        oldPassword,
+        newPassword,
+      } = req.body;
 
-    // FIND USER
-    const user =
-      await User.findById(userId);
+      // USER FROM TOKEN
+      const user =
+        await User.findById(
+          req.user.id
+        );
 
-    if (!user) {
+      // USER CHECK
+      if (!user) {
 
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+
+      }
+
+      // OLD PASSWORD CHECK
+      const isMatch =
+        await bcrypt.compare(
+          oldPassword,
+          user.password
+        );
+
+      if (!isMatch) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Current password incorrect",
+        });
+
+      }
+
+      // HASH PASSWORD
+      const hashedPassword =
+        await bcrypt.hash(
+          newPassword,
+          10
+        );
+
+      // SAVE PASSWORD
+      user.password =
+        hashedPassword;
+
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message:
+          "Password updated successfully",
       });
 
     }
 
-    // CHECK OLD PASSWORD
-    const isMatch =
-      await bcrypt.compare(
-        oldPassword,
-        user.password
-      );
+    catch (error) {
 
-    if (!isMatch) {
+      console.log(error);
 
-      return res.status(400).json({
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+      });
+
+    }
+
+  };
+
+export const getCandidateProfile =
+  async (req, res) => {
+
+    try {
+
+      const user =
+        await User.findById(
+          req.params.id
+        ).select("-password");
+
+      if (!user) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "Candidate not found",
+        });
+
+      }
+
+      res.status(200).json({
+        success: true,
+        user,
+      });
+
+    } catch (error) {
+
+      console.log(error);
+
+      res.status(500).json({
         success: false,
         message:
-          "Current password incorrect",
+          error.message,
       });
 
     }
 
-    // HASH NEW PASSWORD
-    const hashedPassword =
-      await bcrypt.hash(
-        newPassword,
-        10
-      );
-
-    user.password =
-      hashedPassword;
-
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message:
-        "Password updated successfully",
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-
-  }
-
-};
+  };

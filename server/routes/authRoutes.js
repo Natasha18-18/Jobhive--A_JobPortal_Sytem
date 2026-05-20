@@ -1,4 +1,5 @@
 import express from "express";
+import { protect } from "../middleware/authMiddleware.js";
 
 import {
   sendOTP,
@@ -10,9 +11,16 @@ import {
   verifyForgotOTP,
   resetPassword,
   changePassword,
+  getCandidateProfile,
 } from "../controllers/authController.js";
 
 const router = express.Router();
+
+router.get(
+  "/candidate/:id",
+  protect,
+  getCandidateProfile
+);
 
 // =========================
 // REGISTER
@@ -48,7 +56,8 @@ router.post("/reset-password", resetPassword);
 
 router.put(
   "/change-password",
+  protect,
   changePassword
-);
+); 
 
 export default router;

@@ -25,6 +25,7 @@ import {
   FaUserTie,
   FaEnvelope,
   FaBookmark,
+  FaClipboardList,
 } from "react-icons/fa";
 
 import {
@@ -74,14 +75,25 @@ useEffect(() => {
     localStorage.getItem("user")
   );
 
-  setUser(storedUser);
-
-  setProfileData(storedUser);
-
   if (storedUser) {
+
+    setUser(storedUser);
+
+    setProfileData(storedUser);
+
     fetchNotifications();
+
   }
 
+  else {
+
+    setUser(null);
+
+    setProfileData(null);
+
+  }
+
+  // PROFILE UPDATE EVENT
   const updateNavbarProfile = () => {
 
     const updatedUser = JSON.parse(
@@ -91,6 +103,26 @@ useEffect(() => {
     setUser(updatedUser);
 
     setProfileData(updatedUser);
+
+  };
+
+  // STORAGE EVENT
+  const syncLogout = () => {
+
+    const currentUser = JSON.parse(
+      localStorage.getItem("user")
+    );
+
+    if (!currentUser) {
+
+      setUser(null);
+
+      setProfileData(null);
+
+      setNotifications([]);
+
+    }
+
   };
 
   window.addEventListener(
@@ -98,11 +130,23 @@ useEffect(() => {
     updateNavbarProfile
   );
 
+  window.addEventListener(
+    "storage",
+    syncLogout
+  );
+
   return () => {
+
     window.removeEventListener(
       "profileUpdated",
       updateNavbarProfile
     );
+
+    window.removeEventListener(
+      "storage",
+      syncLogout
+    );
+
   };
 
 }, [location.pathname]);
@@ -145,20 +189,35 @@ useEffect(() => {
   // LOGOUT
   // =========================
 
-  const handleLogout = () => {
+const handleLogout = () => {
 
-    localStorage.removeItem("user");
+  // CLEAR STORAGE
+  localStorage.removeItem("user");
 
-    localStorage.removeItem("token");
+  localStorage.removeItem("token");
 
-    setUser(null);
+  localStorage.clear();
 
-    setProfileData(null);
+  // CLEAR STATES
+  setUser(null);
 
-    navigate("/");
+  setProfileData(null);
 
-  };
+  setNotifications([]);
 
+  setProfileOpen(false);
+
+  setMenuOpen(false);
+
+  // FORCE HOME REDIRECT
+  navigate("/", {
+    replace: true,
+  });
+
+  // FORCE REFRESH
+  window.location.reload();
+
+};
   // =========================
   // NAV LINKS
   // =========================
@@ -169,6 +228,12 @@ const candidateLinks = user
         name: "Jobs",
         path: "/jobs",
         icon: <FaBriefcase />,
+      },
+
+      {
+        name: "Applied Jobs",
+        path: "/applied-jobs",
+        icon: <FaClipboardList />,
       },
 
       {
