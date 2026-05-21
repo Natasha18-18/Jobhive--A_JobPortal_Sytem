@@ -5,6 +5,7 @@ import {
   markAsRead,
   deleteNotification,
   clearAllNotifications,
+  markAllAsRead
 } from "../controllers/notificationController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -21,6 +22,12 @@ router.put(
   "/read/:id",
   protect,
   markAsRead
+);
+
+router.put(
+  "/read-all",
+  protect,
+  markAllAsRead
 );
 
 router.delete(

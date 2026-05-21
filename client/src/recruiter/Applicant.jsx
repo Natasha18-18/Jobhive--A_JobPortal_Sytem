@@ -43,7 +43,10 @@ function Applicants() {
 
   const [actionLoading, setActionLoading] =
     useState("");
-
+const handleBack = () => {
+  // safer check
+  navigate("/recruiter/my-jobs");
+};
   // =========================
   // FETCH APPLICANTS
   // =========================
@@ -65,15 +68,17 @@ function Applicants() {
           "token"
         );
 
-      const response =
-        await axios.get(
-          `http://localhost:5002/api/application/applicants/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+const response = await axios.get(
+  `http://localhost:5002/api/application/applicants/${id}`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+console.log("API RESPONSE:", response.data);
+console.log("APPLICATIONS:", response.data.applications);
 
       setApplications(
         response.data.applications
@@ -333,17 +338,13 @@ function Applicants() {
           </div>
 
           <button
-            onClick={() =>
-              navigate(-1)
-            }
-            className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-400/30 hover:bg-white/10 transition duration-300 w-fit"
-          >
-
-            <FaArrowLeft />
-
-            Back
-
-          </button>
+  type="button"
+  onClick={handleBack}
+  className="relative z-[999] pointer-events-auto flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-400/30 hover:bg-white/10 transition duration-300 w-fit"
+>
+  <FaArrowLeft />
+  Back
+</button>
 
         </motion.div>
 
@@ -362,8 +363,7 @@ function Applicants() {
           <>
             {/* EMPTY */}
 
-            {applications.length ===
-            0 ? (
+            {!applications || applications.length === 0 ? (
 
               <div className="mt-24 bg-white/5 border border-white/10 rounded-[30px] p-14 text-center">
 
@@ -425,7 +425,7 @@ function Applicants() {
                         className="relative bg-[#0b1120]/90 border border-white/10 rounded-[30px] p-8 overflow-hidden backdrop-blur-xl"
                       >
 
-                        <div className="absolute top-0 right-0 w-52 h-52 bg-cyan-500/10 blur-3xl rounded-full"></div>
+                        <div className="absolute top-0 right-0 w-52 h-52 bg-cyan-500/10 blur-3xl rounded-full pointer-events-none"></div>
 
                         <div className="relative z-10">
 

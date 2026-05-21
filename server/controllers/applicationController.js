@@ -72,19 +72,19 @@ export const applyJob = async (
         status: "Pending",
       });
 
-    if (
-      !job.applicants.includes(
-        userId
-      )
-    ) {
+    // if (
+    //   !job.applicants.includes(
+    //     userId
+    //   )
+    // ) {
 
-      job.applicants.push(
-        userId
-      );
+    //   job.applicants.push(
+    //     userId
+    //   );
 
-      await job.save();
+    //   await job.save();
 
-    }
+    // }
 
     const recruiter =
       await User.findById(

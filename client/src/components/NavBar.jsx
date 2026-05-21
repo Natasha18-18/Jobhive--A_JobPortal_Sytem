@@ -175,7 +175,9 @@ useEffect(() => {
           }
         );
 
-      setNotifications(data);
+      setNotifications(
+  data.notifications || []
+);
 
     } catch (error) {
 
@@ -446,9 +448,11 @@ const candidateLinks = user
 
                   <FaBell className="text-lg" />
 
-                  {notifications.length > 0 && (
-                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
-                  )}
+                  {notifications?.some(
+  (item) => !item.isRead
+) && (
+  <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
+)}
 
                 </motion.button>
 

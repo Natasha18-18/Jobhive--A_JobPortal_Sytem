@@ -414,9 +414,7 @@ function MyJobs() {
 
                           <FaUsers className="text-cyan-400" />
 
-                          {job?.applicants
-                            ?.length || 0}{" "}
-                          Applicants
+                         {job?.applicantsCount || 0} Applicants
 
                         </div>
 

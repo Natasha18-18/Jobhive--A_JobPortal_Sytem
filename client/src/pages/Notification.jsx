@@ -37,6 +37,8 @@ function Notifications() {
 
     fetchNotifications();
 
+    markAllNotificationsRead();
+
   }, []);
 
 
@@ -71,6 +73,28 @@ function Notifications() {
 
     };
 
+    const markAllNotificationsRead =
+  async () => {
+
+    try {
+
+      await API.put(
+        "/notifications/read-all"
+      );
+
+      window.dispatchEvent(
+        new Event(
+          "notificationsUpdated"
+        )
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
 
   // =========================
   // MARK AS READ

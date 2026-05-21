@@ -66,9 +66,36 @@ export const getAllJobs = async (req, res) => {
 // GET MY JOBS
 export const getMyJobs = async (req, res) => {
   try {
-    const jobs = await Job.find({ recruiter: req.user.id }).sort({
+    const jobs = await Job.aggregate([
+  {
+    $match: {
+      recruiter: req.user._id,
+    },
+  },
+
+  {
+    $lookup: {
+      from: "applications",
+      localField: "_id",
+      foreignField: "job",
+      as: "applications",
+    },
+  },
+
+  {
+    $addFields: {
+      applicantsCount: {
+        $size: "$applications",
+      },
+    },
+  },
+
+  {
+    $sort: {
       createdAt: -1,
-    });
+    },
+  },
+]);
 
     res.status(200).json({ success: true, jobs });
   } catch (error) {

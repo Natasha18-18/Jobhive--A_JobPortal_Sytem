@@ -128,3 +128,48 @@ export const clearAllNotifications =
 
     }
   };
+
+// ==============================
+// MARK ALL AS READ
+// ==============================
+
+// ==============================
+// MARK ALL AS READ
+// ==============================
+
+export const markAllAsRead =
+  async (req, res) => {
+
+    try {
+
+      await Notification.updateMany(
+        {
+          user: req.user._id,
+          isRead: false,
+        },
+        {
+          $set: {
+            isRead: true,
+          },
+        }
+      );
+
+      res.status(200).json({
+        success: true,
+        message:
+          "All notifications marked as read",
+      });
+
+    } catch (error) {
+
+      console.log(error);
+
+      res.status(500).json({
+        success: false,
+        message:
+          "Failed to update notifications",
+      });
+
+    }
+
+  };
