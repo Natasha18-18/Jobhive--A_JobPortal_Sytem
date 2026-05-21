@@ -11,8 +11,6 @@ import {
   FaSearch,
   FaStar,
   FaBriefcase,
-  FaCheckCircle,
-  FaGlobe,
 } from "react-icons/fa";
 
 function Companies() {
@@ -25,7 +23,7 @@ function Companies() {
   }, []);
 
   // =========================
-  // FETCH
+  // FETCH COMPANIES
   // =========================
   const fetchCompanies = async () => {
     try {
@@ -47,25 +45,37 @@ function Companies() {
   };
 
   // =========================
-  // SEARCH FILTER
+  // FILTERED COMPANIES
   // =========================
   const filteredCompanies = useMemo(() => {
     const text = search.toLowerCase();
 
     return companies.filter((company) => {
+      const companyName =
+        company?.recruiterProfile?.companyName ||
+        company?.companyName ||
+        "";
+
+      const location =
+        company?.recruiterProfile?.location ||
+        company?.location ||
+        "";
+
+      const industry =
+        company?.recruiterProfile?.industry ||
+        company?.industry ||
+        "";
+
       return (
-        company?.recruiterProfile?.companyName?.toLowerCase().includes(text) ||
-        company?.companyName?.toLowerCase().includes(text) ||
-        company?.recruiterProfile?.location?.toLowerCase().includes(text) ||
-        company?.location?.toLowerCase().includes(text) ||
-        company?.recruiterProfile?.industry?.toLowerCase().includes(text) ||
-        company?.industry?.toLowerCase().includes(text)
+        companyName.toLowerCase().includes(text) ||
+        location.toLowerCase().includes(text) ||
+        industry.toLowerCase().includes(text)
       );
     });
   }, [search, companies]);
 
   // =========================
-  // REMOVE INVALID COMPANIES (IMPORTANT FIX)
+  // VALID COMPANIES ONLY
   // =========================
   const validCompanies = useMemo(() => {
     return filteredCompanies.filter((company) => {
@@ -81,131 +91,195 @@ function Companies() {
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
-        <div className="flex flex-col lg:flex-row justify-between gap-6 mb-12">
+        <div className="flex flex-col lg:flex-row justify-between gap-6 mb-14">
+
           <div>
-            <h1 className="text-5xl font-black">Top Companies</h1>
+            <h1 className="text-5xl md:text-6xl font-black">
+              Top Companies
+            </h1>
+
             <p className="text-gray-400 mt-4 text-lg">
-              Explore recruiters and companies hiring now
+              Discover amazing companies hiring right now
             </p>
           </div>
 
           {/* SEARCH */}
-          <div className="w-full lg:w-[400px]">
-            <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-              <FaSearch className="text-cyan-400" />
+          <div className="w-full lg:w-[420px]">
+            <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 backdrop-blur-xl">
+
+              <FaSearch className="text-cyan-400 text-lg" />
+
               <input
                 type="text"
-                placeholder="Search company..."
+                placeholder="Search companies..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="bg-transparent outline-none w-full placeholder:text-gray-500"
               />
+
             </div>
           </div>
+
         </div>
 
         {/* LOADING */}
         {loading ? (
-          <div className="flex justify-center mt-24">
+          <div className="flex justify-center mt-28">
             <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : validCompanies.length === 0 ? (
-          <div className="text-center mt-24">
-            <h2 className="text-4xl font-black">No Companies Found</h2>
-            <p className="text-gray-400 mt-4">Try another keyword</p>
+          <div className="text-center mt-28">
+
+            <h2 className="text-4xl font-black">
+              No Companies Found
+            </h2>
+
+            <p className="text-gray-400 mt-4">
+              Try another keyword
+            </p>
+
           </div>
         ) : (
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
 
-            {validCompanies.map((company, index) => (
-              <motion.div
-                key={company._id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                whileHover={{ y: -8 }}
-                className="bg-white/5 border border-white/10 rounded-[30px] overflow-hidden"
-              >
+            {validCompanies.map((company, index) => {
 
-                {/* HEADER */}
-                <div className="h-36 bg-gradient-to-r from-cyan-500 to-blue-600" />
+              const companyName =
+                company?.recruiterProfile?.companyName ||
+                company?.companyName ||
+                "Unknown Company";
 
-                {/* LOGO */}
-                <div className="px-7 -mt-12">
-                  <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-white/10 bg-[#111827] flex items-center justify-center">
+              const industry =
+                company?.recruiterProfile?.industry ||
+                company?.industry ||
+                "Industry Not Available";
 
-                    {company?.recruiterProfile?.companyLogo ? (
-                      <img
-                        src={`http://localhost:5002/uploads/${company.recruiterProfile.companyLogo}`}
-                        className="w-full h-full object-cover"
-                        alt="logo"
-                      />
-                    ) : company?.profileImage ? (
-                      <img
-                        src={`http://localhost:5002/uploads/${company.profileImage}`}
-                        className="w-full h-full object-cover"
-                        alt="profile"
-                      />
-                    ) : (
-                      <FaBuilding className="text-3xl text-white" />
-                    )}
-                  </div>
-                </div>
+              const location =
+                company?.recruiterProfile?.location ||
+                company?.location ||
+                "Location Not Available";
 
-                {/* CONTENT */}
-                <div className="p-7">
+              const companyLogo =
+                company?.recruiterProfile?.companyLogo ||
+                company?.profileImage;
 
-                  <h2 className="text-3xl font-black">
-                    {company?.recruiterProfile?.companyName ||
-                      company?.companyName}
-                  </h2>
+              return (
+                <motion.div
+                  key={company._id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ y: -10 }}
+                  className="bg-white/5 border border-white/10 rounded-[32px] overflow-hidden backdrop-blur-xl hover:border-cyan-400/30 transition-all duration-300"
+                >
 
-                  <p className="text-cyan-400 mt-2">
-                    {company?.recruiterProfile?.industry ||
-                      company?.industry}
-                  </p>
+                  {/* TOP BANNER */}
+                  <div className="h-36 bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 relative">
 
-                  {/* STATUS */}
-                  <p
-                    className={`mt-3 font-semibold ${
-                      company?.openStatus
-                        ? "text-green-400"
-                        : "text-red-400"
-                    }`}
-                  >
-                    {company?.openStatus
-                      ? "Hiring Open"
-                      : "Hiring Closed"}
-                  </p>
+                    <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-2">
 
-                  {/* INFO */}
-                  <div className="mt-6 space-y-3 text-gray-300">
-                    <div className="flex items-center gap-3">
-                      <FaMapMarkerAlt className="text-cyan-400" />
-                      {company?.recruiterProfile?.location ||
-                        company?.location}
+                      <FaStar className="text-yellow-400" />
+
+                      Featured
+
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <FaBriefcase className="text-cyan-400" />
-                      {company?.totalJobs || 0} Jobs Open
-                    </div>
                   </div>
 
-                  {/* BUTTON */}
-                  <Link
-                    to={`/company/${company._id}`}
-                    className="mt-7 flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-500 to-blue-600 py-4 rounded-2xl"
-                  >
-                    View Company <FaArrowRight />
-                  </Link>
+                  {/* LOGO */}
+                  <div className="px-7 -mt-12 relative z-10">
 
-                </div>
-              </motion.div>
-            ))}
+                    <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-[#030712] bg-[#111827] flex items-center justify-center shadow-2xl">
+
+                      {companyLogo ? (
+                        <img
+                          src={`http://localhost:5002/uploads/${companyLogo}`}
+                          alt={companyName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <FaBuilding className="text-4xl text-white" />
+                      )}
+
+                    </div>
+
+                  </div>
+
+                  {/* CONTENT */}
+                  <div className="p-7">
+
+                    <div className="flex items-start justify-between gap-4">
+
+                      <div>
+                        <h2 className="text-3xl font-black leading-tight">
+                          {companyName}
+                        </h2>
+
+                        <p className="text-cyan-400 mt-2">
+                          {industry}
+                        </p>
+                      </div>
+
+                      <div
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          company?.openStatus
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-red-500/20 text-red-400"
+                        }`}
+                      >
+                        {company?.openStatus
+                          ? "OPEN"
+                          : "CLOSED"}
+                      </div>
+
+                    </div>
+
+                    {/* INFO */}
+                    <div className="mt-7 space-y-4 text-gray-300">
+
+                      <div className="flex items-center gap-3">
+                        <FaMapMarkerAlt className="text-cyan-400" />
+
+                        <span>{location}</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <FaBriefcase className="text-cyan-400" />
+
+                        <span>
+                          {company?.totalJobs || 0} Open Positions
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <FaUsers className="text-cyan-400" />
+
+                        <span>Actively Hiring</span>
+                      </div>
+
+                    </div>
+
+                    {/* BUTTON */}
+                    <Link
+                      to={`/company/${company._id}`}
+                      className="mt-8 flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:scale-[1.02] transition-all duration-300 py-4 rounded-2xl font-bold shadow-lg shadow-cyan-500/20"
+                    >
+
+                      Explore Company
+
+                      <FaArrowRight />
+
+                    </Link>
+
+                  </div>
+
+                </motion.div>
+              );
+            })}
 
           </div>
         )}
+
       </div>
     </section>
   );

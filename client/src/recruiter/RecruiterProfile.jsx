@@ -143,7 +143,7 @@ function RecruiterProfile() {
       if (user.profileImage) {
 
         setProfilePreview(
-          `http://localhost:5002/uploads/${user.profileImage}`
+          `http://localhost:5002/uploads/${user.profileImage}?${Date.now()}`
         );
 
       }
@@ -156,7 +156,7 @@ function RecruiterProfile() {
       ) {
 
         setLogoPreview(
-          `http://localhost:5002/uploads/${user.recruiterProfile.companyLogo}`
+          `http://localhost:5002/uploads/${user.recruiterProfile.companyLogo}?${Date.now()}`
         );
 
       }
@@ -321,6 +321,18 @@ function RecruiterProfile() {
           response.data.user
         )
       );
+
+      setProfilePreview(
+  `http://localhost:5002/uploads/${response.data.user.profileImage}?${Date.now()}`
+);
+
+if (
+  response.data.user.recruiterProfile?.companyLogo
+) {
+  setLogoPreview(
+    `http://localhost:5002/uploads/${response.data.user.recruiterProfile.companyLogo}?${Date.now()}`
+  );
+}
 
       // UPDATE NAVBAR
 

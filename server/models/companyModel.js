@@ -1,43 +1,36 @@
 import mongoose from "mongoose";
 
-const companySchema =
-  new mongoose.Schema(
-    {
-      companyName: {
-        type: String,
-        required: true,
-      },
-
-      industry: {
-        type: String,
-      },
-
-      location: {
-        type: String,
-      },
-
-      website: {
-        type: String,
-      },
-
-      companyLogo: {
-        type: String,
-      },
-
-      description: {
-        type: String,
-      },
-
-      totalJobs: {
-        type: Number,
-        default: 0,
-      },
+const companySchema = new mongoose.Schema(
+  {
+    companyName: {
+      type: String,
+      required: true,
     },
 
-    {
-      timestamps: true,
-    }
-  );
+    industry: String,
+
+    location: String,
+
+    website: String,
+
+    companyLogo: String,
+
+    description: String,
+
+    totalJobs: {
+      type: Number,
+      default: 0,
+    },
+    
+    openStatus: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 const Company =
   mongoose.model(

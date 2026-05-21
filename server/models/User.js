@@ -121,54 +121,56 @@ const userSchema = new mongoose.Schema(
     // RECRUITER PROFILE
     // ==========================
 
-    recruiterProfile: {
-
-      companyName: {
-        type: String,
-        default: "",
-      },
-
-      industry: {
-        type: String,
-        default: "",
-      },
-
-      location: {
-        type: String,
-        default: "",
-      },
-
-      website: {
-        type: String,
-        default: "",
-      },
-
-      linkedin: {
-        type: String,
-        default: "",
-      },
-
-      experience: {
-        type: String,
-        default: "",
-      },
-
-      skills: {
-        type: String,
-        default: "",
-      },
-
-      companyDescription: {
-        type: String,
-        default: "",
-      },
-
-      companyLogo: {
-        type: String,
-        default: "",
-      },
-
+recruiterProfile: {
+  type: {
+    companyName: {
+      type: String,
+      default: "",
     },
+
+    industry: {
+      type: String,
+      default: "",
+    },
+
+    location: {
+      type: String,
+      default: "",
+    },
+
+    website: {
+      type: String,
+      default: "",
+    },
+
+    linkedin: {
+      type: String,
+      default: "",
+    },
+
+    experience: {
+      type: String,
+      default: "",
+    },
+
+    skills: {
+      type: String,
+      default: "",
+    },
+
+    companyDescription: {
+      type: String,
+      default: "",
+    },
+
+    companyLogo: {
+      type: String,
+      default: "",
+    },
+  },
+
+  default: {},
+},
 
   },
 

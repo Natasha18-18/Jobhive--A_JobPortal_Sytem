@@ -100,31 +100,35 @@ export const updateRecruiterProfile =
       user.phone = phone;
 
       // RECRUITER PROFILE
-      user.recruiterProfile.companyName =
-        companyName;
+      // RECRUITER PROFILE
+user.recruiterProfile.companyName =
+  companyName;
 
-      user.recruiterProfile.industry =
-        industry;
+user.recruiterProfile.industry =
+  industry;
 
-      user.recruiterProfile.location =
-        location;
+user.recruiterProfile.location =
+  location;
 
-      user.recruiterProfile.website =
-        website;
+user.recruiterProfile.website =
+  website;
 
-      user.recruiterProfile.linkedin =
-        linkedin;
+user.recruiterProfile.linkedin =
+  linkedin;
 
-      user.recruiterProfile.experience =
-        experience;
+user.recruiterProfile.experience =
+  experience;
 
-      user.recruiterProfile.skills =
-        skills;
+user.recruiterProfile.skills =
+  skills;
 
-      user.recruiterProfile.companyDescription =
-        companyDescription;
+user.recruiterProfile.companyDescription =
+  companyDescription;
 
-      await user.save();
+// IMPORTANT
+user.markModified("recruiterProfile");
+
+await user.save();
 
       const updatedUser =
         await User.findById(

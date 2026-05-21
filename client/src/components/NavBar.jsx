@@ -196,7 +196,8 @@ const handleLogout = () => {
 
   localStorage.removeItem("token");
 
-  localStorage.clear();
+  localStorage.removeItem("user");
+  localStorage.removeItem("token"); 
 
   // CLEAR STATES
   setUser(null);
@@ -454,7 +455,7 @@ const candidateLinks = user
               </Link>
 
               {/* MESSAGE */}
-              <Link
+              {/* <Link
                 to={
                   isRecruiter
                     ? "/recruiter/messages"
@@ -476,7 +477,7 @@ const candidateLinks = user
 
                 </motion.button>
 
-              </Link>
+              </Link> */}
 
               {/* PROFILE */}
               <div className="relative">

@@ -9,13 +9,17 @@ export const getCompanies = async (req, res) => {
   try {
 
     // RECRUITER COMPANIES
-    const recruiters = await User.find({
-      role: "recruiter",
-    }).select(`
-      fullName
-      profileImage
-      recruiterProfile
-    `);
+   const recruiters = await User.find({
+  role: "recruiter",
+  "recruiterProfile.companyName": {
+    $exists: true,
+    $ne: "",
+  },
+}).select(`
+  fullName
+  profileImage
+  recruiterProfile
+`);
 
     const recruiterCompanies = await Promise.all(
       recruiters.map(async (recruiter) => {
@@ -25,15 +29,17 @@ export const getCompanies = async (req, res) => {
         });
 
         return {
-          _id: recruiter._id,
-          type: "recruiter",
+  _id: recruiter._id,
+  type: "recruiter",
 
-          fullName: recruiter.fullName,
-          profileImage: recruiter.profileImage,
-          recruiterProfile: recruiter.recruiterProfile,
+  fullName: recruiter.fullName,
+  profileImage: recruiter.profileImage,
+  recruiterProfile: recruiter.recruiterProfile,
 
-          totalJobs,
-        };
+  totalJobs,
+
+  openStatus: totalJobs > 0,
+};
       })
     );
 
